@@ -1,0 +1,28 @@
+name: pivot-modAL
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python >=3.9, <4.0
+  - jupyter
+  - ipykernel
+  - streamlit==1.29
+  - numpy>=1.2
+  - pandas>=1.4
+  - scikit-learn>=1.2
+  - matplotlib>=3.5
+  - imageio
+  - tensorflow
+  - pip
+  - pip:
+     - tqdm
+     - pylint
+     - modAL
+#     - libact # requires Python 3.5 so we'll need to make another environment.
+     - azure-storage-blob
+#     - azure-mgmt-core # don't need to manually install as it comes with others
+#     - azure-core  # same as azure-mgmt-core
+     - azure-mgmt-compute
+     - azure-identity
+     - azure-mgmt-storage
+     - opencv-python
