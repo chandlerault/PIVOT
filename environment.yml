@@ -26,3 +26,4 @@ dependencies:
      - azure-identity
      - azure-mgmt-storage
      - opencv-python
+     - streamlit_option_menu  
