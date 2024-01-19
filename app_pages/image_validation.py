@@ -4,9 +4,6 @@ import pandas as pd
 
 from utils import data_utils
 
-def show_photo(image):
-    st.image(image)
-
 def main():
 
     st.markdown("""
@@ -71,15 +68,16 @@ def main():
         elif user_goal == 'Performance Verification':
             filtered_df = metrics_df.sample(n=user_number)
 
-        st.dataframe(filtered_df)
-
         try:
             if 'image_iterator' not in st.session_state:
                 st.session_state['image_iterator'] = data_utils.get_images(filtered_df, 1)
         except:
             st.error("Failed to instantiate class")
 
-    image_set = ""
+    image_set = []
+    selection = {'entropy_score': 'Entropy',
+                 'least_confident_score': 'Least Confidence',
+                 'least_margin_score': 'Least Margin'}
 
     if all((user_name!="", user_email!="", user_lab!="", user_goal is not None, user_selec is not None, user_number is not None)):
     
@@ -97,7 +95,8 @@ def main():
                 ml_label = str(image[1][3])
             
                 st.write("ML Generated Label: " + ml_label)
-                st.write("With a confidence level of: ")
+                st.write(selection[user_selec], " Score: ", image[1][user_selec])
+
                 user_label = st.selectbox(
                     label = "Select the correct phytoplankton subcategory:",
                     options = ['Cilliate',
@@ -114,9 +113,21 @@ def main():
                 )
 
             submitted = st.form_submit_button("Submit")
-
             if submitted:
-                st.write("Below is all the inputed information:")
-                st.write(user_name, user_label)
-
+                # Will this data be sent to a SQL Database?????????
+                new_data = [image[1]['index'],
+                        image[1]['image_path'],
+                        image[1]['pred_label'],
+                        image[1]['pred_class'],
+                        image[1]['entropy_score'],
+                        image[1]['least_confident_score'],
+                        image[1]['least_margin_score'],
+                        user_label,
+                        user_name,
+                        user_email,
+                        user_lab,
+                        user_date,
+                        user_goal,
+                        user_selec]
+                st.write("The previous image was labeled: ", user_label)
 
