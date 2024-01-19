@@ -7,7 +7,6 @@ import numpy as np
 from sklearn.metrics import precision_score, recall_score, confusion_matrix, classification_report
 
 
-
 def get_percent(row, c): 
     val = row[c]
     return float(val) / float(row['n_obs'])
@@ -23,6 +22,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion Matrix'
         title (str): Plot title.
         cmap (matplotlib colormap): Colormap to be used for the plot.
     """
+    fig, ax = plt.subplots() 
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
@@ -44,7 +44,7 @@ def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion Matrix'
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
 
-    return plt
+    return fig
 
 def plot_precision_recall(class_labels, x_labels, precision, recall, spacing):
     fig, ax = plt.subplots() 
@@ -56,6 +56,17 @@ def plot_precision_recall(class_labels, x_labels, precision, recall, spacing):
     plt.ylabel("Performance")
     plt.title("Model Performance: Precision and Recall") 
     plt.legend()
+
+    return fig
+
+def plot_f1_score(class_labels, f1_score):
+    fig, ax = plt.subplots()
+    plt.bar(class_labels, f1_score, color='#0d205f')
+
+    plt.xticks(class_labels, rotation=45)
+    plt.xlabel("Phytoplanton Classes") 
+    plt.ylabel("F1 Score")
+    plt.title("Model Performance: F1 Score") 
 
     return fig
 
@@ -77,7 +88,7 @@ def main():
     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
     st.markdown("""<h3 style='text-align: left; color: black;'>
-                Model Summary</h4>""",
+                Trained Model Summary</h4>""",
                 unsafe_allow_html=True)
 
     class_labels = ["Chloro", "Cilliate", "Crypto", "Diatom", "Dictyo", "Dino", "Eugleno", "Unident.", "Prymnesio", "null"]
@@ -94,14 +105,38 @@ def main():
     st.write("Accuracy: ", model_acc)
     st.write("Precision: ", model_prec)
     st.write("Recall: ", model_recall)
+
+    filtered_phyto = list(range(0,10,1))
+
+    col_1, col_2, col_3, col_4, col_5 = st.columns(5)
+    with col_1:
+        filtered_phyto[0] = st.checkbox(class_labels[0], value=1)
+        filtered_phyto[5] = st.checkbox(class_labels[5], value=1)
+    with col_2:
+        filtered_phyto[1] = st.checkbox(class_labels[1], value=1)
+        filtered_phyto[6] = st.checkbox(class_labels[6], value=1)
+    with col_3:
+        filtered_phyto[2] = st.checkbox(class_labels[2], value=1)
+        filtered_phyto[7] = st.checkbox(class_labels[7], value=1)
+    with col_4:
+        filtered_phyto[3] = st.checkbox(class_labels[3], value=1)
+        filtered_phyto[8] = st.checkbox(class_labels[8], value=1)
+    with col_5:
+        filtered_phyto[4] = st.checkbox(class_labels[4], value=1)
+        filtered_phyto[9] = st.checkbox(class_labels[9], value=1)
+
+    count = 0
+
+    for i in range(0,len(filtered_phyto)):
+        if filtered_phyto[i] == False:
+            model_pred = model_pred[model_pred['true_label'] != i]
+            model_pred = model_pred[model_pred['pred_label'] != i]
+            i = i-count
+            del class_labels[i]
+            count = count + 1
     
-    left_1, right_1 = st.columns(2)
-    with left_1:
-        cm = confusion_matrix(model_pred.true_label, model_pred.pred_label)
-        cm_fig = plot_confusion_matrix(cm, classes=class_labels, normalize=True, title='Confusion Matrix')
-        st.pyplot(cm_fig)
-        
-    with right_1:
+    left_2, right_2 = st.columns(2)
+    with left_2:
         c_report = get_classification_report(model_pred.true_label,model_pred.pred_label)
         c_report = c_report.drop(['weighted avg','accuracy','macro avg']).sort_index()
         c_report = c_report.assign(class_label=class_labels)
@@ -112,5 +147,19 @@ def main():
                                    0.4)
         st.pyplot(prec_rec)
 
+        cm = confusion_matrix(model_pred.true_label, model_pred.pred_label)
+        cm_fig = plot_confusion_matrix(cm, classes=class_labels, normalize=True, title='Confusion Matrix')
+        st.pyplot(cm_fig)
+
+        
+    with right_2:
+        c_report = c_report.sort_values(by=['f1-score'], ascending=False)
+        f1_plot = plot_f1_score(c_report['class_label'], c_report['f1-score'])
+        st.pyplot(f1_plot)
+
     st.divider()
+
+    st.markdown("""<h3 style='text-align: left; color: black;'>
+                Unseen Model Summary</h4>""",
+                unsafe_allow_html=True)
 

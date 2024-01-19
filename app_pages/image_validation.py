@@ -85,8 +85,7 @@ def main():
             try:
                 if 'image_iterator' in st.session_state:
                     image_set = next(st.session_state['image_iterator'])
-            except Exception as e:
-                st.write(e)
+            except:
                 st.error("Failed to load next image set")
 
             for image in image_set: 
