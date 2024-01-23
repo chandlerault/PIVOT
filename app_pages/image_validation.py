@@ -20,22 +20,33 @@ def main():
     
     left_1, right_1 = st.columns(2)
     with left_1:
-        user_name = st.text_input(label = "Name:")
-    with right_1:
         user_email = st.text_input(label = "Email:")
+    with right_1:
+        user_date = st.date_input(label = "Date:")
+
+    # Retreive username and lab from database
+    # if not in database:
 
     left_2, right_2 = st.columns(2)
     with left_2:
-        user_lab = st.text_input(label = "Lab:")
+        user_name = st.text_input(label = "Name:")
+        user_num_labels = st.radio(label="Approximately how many images have you labeled?",
+                               options=['None', '25 to 100',
+                                        '100 to 500', '500 to 1000',
+                                        '1000+'])
     with right_2:
-        user_date = st.date_input(label = "Date:")
+        user_lab = st.text_input(label = "Lab:")
+        user_domain = st.radio(label="Do you have experience in this field?",
+                               options=['Yes', 'No'])
+
+    # else, display username and lab retrieved from database
 
     st.divider()
 
     st.markdown("""<h3 style='text-align: left; color: black;'>
                 Goal</h4>""",
                 unsafe_allow_html=True)
-    
+       
     user_goal = st.radio(label='For what purpose are the images being labeled?',
                     options=['Performance Verification', 'Model Retraining'],
                     index=None)
