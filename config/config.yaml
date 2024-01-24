@@ -1,5 +1,0 @@
-connection_string2: DefaultEndpointsProtocol=https;AccountName=ifcb;AccountKey=mzeoQjV8g8RZyI18AdD4x1XxQRm0GesvssNtPgGNom7a8Kk3FRe8bjCm9BRq7m/gwqrK8GcwOXDBPKWq21jFPg==;EndpointSuffix=core.windows.net
-connection_string: DefaultEndpointsProtocol=https;AccountName=capstoneexperiment2024;AccountKey=EfeuBBMKenUAQXgMxybuiAiY9Kf3qEH2dkN+c7maj8QYEioaqJwG4fgKzprSSi+XVNzsvaG2GKc8+AStsPL0fg==;EndpointSuffix=core.windows.net
-metrics_container: metrics
-metrics_blob: metrics1.parquet
-image_container: naames
