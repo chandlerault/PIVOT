@@ -11,7 +11,7 @@ from app_pages import dashboard
 cwd = os.getcwd()
 base_path = cwd.split("PIVOT", maxsplit=1)[0]
 curr_path = base_path + \
-    'PIVOT/'
+    'PIVOT/PIVOT/'
 os.chdir(curr_path)
 
 st.set_page_config(layout="wide")
