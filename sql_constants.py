@@ -9,8 +9,9 @@ SP_ARGS_TYPE_MAPPING: Dict[str, Optional[OrderedDict[str, Any]]] = {
         ('RELABEL_LAMBDA', float),
         ('BATCH_SIZE', int)
     ]),
-    "MODEL_EVALUATION_MAX_CONSENSUS": OrderedDict([
-        ('MODEL_ID', int)
+    "MODEL_EVALUATION_NON_TEST": OrderedDict([
+        ('MODEL_ID', int),
+        ('MINIMUM_PERCENT', float)
     ]),
     "MODEL_EVALUATION_MAX_CONSENSUS_FILTERING": OrderedDict([
         ('MODEL_ID', int),
@@ -19,7 +20,9 @@ SP_ARGS_TYPE_MAPPING: Dict[str, Optional[OrderedDict[str, Any]]] = {
     "AL_TRAIN_SET": OrderedDict([
         ('MODEL_ID', int),
         ('D_METRIC_ID', int),
-        ('TRAIN_SIZE', int)
+        ('TRAIN_SIZE', int),
+        ('IMAGE_IDS', str)
+
     ]),
     "GENERATE_RANDOM_TEST_SET": OrderedDict([
         ('TEST_SIZE', int),

@@ -77,7 +77,7 @@ def generate_random_evaluation_set(test_size: int = 100000,
 
 def get_test_set_df(model_id: int,
                     minimum_percent: Optional[float] = 0.0,
-                    sp_name : Optional[str] = 'MODEL_EVALUATION_MAX_CONSENSUS_FILTERING',
+                    sp_name: Optional[str] = 'MODEL_EVALUATION_MAX_CONSENSUS_FILTERING',
                     server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
     """
     Get all labeled test data along with model predictions for a given model_id.
@@ -111,12 +111,6 @@ def get_test_set_df(model_id: int,
     df = execute_stored_procedure(sp=sp_name, args=args, server_args=server_args)
 
     return df
-
-
-def get_train_df(
-
-):
-    pass
 
 
 def get_label_rank_df(model_id: int,
@@ -193,6 +187,73 @@ def get_label_rank_df(model_id: int,
     full_df = pd.concat([d_df, r_df])
 
     return full_df
+
+
+def get_train_df(model_id: int,
+                 dissimilarity_id: int,
+                 all_classes: list[str],
+                 train_size: int = 100,
+                 train_ids: Optional[Sequence[int]] = None,
+                 server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
+    """
+    Get a DataFrame for training containing labels based on the specified parameters.
+    Calls the AL_TRAIN_SET stored procedure.
+
+    Parameters:
+        model_id (int): The identifier of the model.
+        dissimilarity_id (int): The identifier for dissimilarity images.
+        all_classes (list): A sorted set of all classes for the model.
+        train_size (int, optional): The total train size for finetuning(default is 100).
+        train_ids (list): A set of image IDs for images that have already been used for training.
+            Default is [-1]
+        server_args (dict, optional): A dictionary containing connection parameters for the server.
+            Expected keys: 'server', 'database', 'username', 'password'.
+            Default values are taken from the `config` dictionary.
+    Returns:
+        pd.DataFrame: A DataFrame containing image metadata ranked by dissimilarity and label count.
+            Columns: IMAGE_ID, BLOB_FILEPATH, ALL_LABELS, LABEL_PERCENTS, UNCERTAINTY
+    """
+
+
+    def generate_class_vectors(row, all_classes):
+        # Apply the function to create the 'ClassVectors' column
+        #
+
+        labels = row['Labels'].split(', ')
+        percent_consensus = [float(val) for val in row['PercentConsensus'].split(', ')]
+        class_vectors = [percent_consensus[all_classes.index(label)] if label in labels else 0.0 for label in
+                         all_classes]
+        return class_vectors
+
+    # Check types of train_ids
+    if train_ids is None:
+        train_ids = [-1]
+    if not (isinstance(train_ids, Sequence)):
+        raise ValueError("The train_ids must be a list or other iterable.")
+    for i in train_ids:
+        if not (isinstance(i, int)):
+            raise ValueError("All elements in train_ids must be integers.")
+    # Convert list into string
+    train_ids = ','.join(str(i) for i in train_ids)
+    # Check basic arguments:
+    args = OrderedDict([
+        ("MODEL_ID", model_id),
+        ("D_METRIC_ID", dissimilarity_id),
+        ("TRAIN_SIZE", train_size),
+        ("TRAIN_IDS", train_ids)
+    ])
+    # check types
+    validate_args("AL_TRAIN_SET", args)
+    # check fixed ranges
+    if train_size <= 0:
+        raise ValueError("The batch_size must be a positive integer.")
+    # Execute stored procedure
+    df = execute_stored_procedure(sp='AL_TRAIN_SET', args=args, server_args=server_args)
+    # Generate single class label
+    df['OneLabel'] = df['ALL_LABELS'].str.split(',', expand=True)[0]
+    class_vectors = df.apply(lambda row: generate_class_vectors(row, all_classes), axis=1)
+    df['class_vectors'] = class_vectors
+    return df
 
 
 def validate_args(sp_name: str, args: Optional[OrderedDict[str, Any]]) -> None:
