@@ -36,8 +36,7 @@ import numpy as np
 import cv2
 
 
-CONFIG_FILE_PATH = 'config/config.yaml'
-config = yaml.load(open(CONFIG_FILE_PATH, 'r', encoding='utf-8'), Loader=yaml.FullLoader)
+from utils import CONFIG
 
 def get_blob_bytes(blob_path):
     """
@@ -54,8 +53,8 @@ def get_blob_bytes(blob_path):
         raise TypeError("filepath must be a string")
 
 
-    connection_string = config['connection_string2'] # TODO: eventually make this one connection string.
-    container_name =  config['image_container']
+    connection_string = CONFIG['connection_string2'] # TODO: eventually make this one connection string.
+    container_name = CONFIG['image_container']
 
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
     blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_path)
@@ -84,10 +83,10 @@ def insert_data(table_name, data):
     """
     try:
         # Define your database connection parameters
-        server = config['server']
-        database = config['database']
-        user = config['db_user']
-        password = config['db_password']
+        server = CONFIG['server']
+        database = CONFIG['database']
+        user = CONFIG['db_user']
+        password = CONFIG['db_password']
         
 
         with pymssql.connect(server, user, password, database) as conn:
@@ -120,10 +119,10 @@ def insert_data(table_name, data):
 
 def select(table_name, conditions, columns=['*']):
     try:
-        server = config['server']
-        database = config['database']
-        user = config['db_user']
-        password = config['db_password']
+        server = CONFIG['server']
+        database = CONFIG['database']
+        user = CONFIG['db_user']
+        password = CONFIG['db_password']
         with pymssql.connect(server=server, database=database, user=user, password=password) as conn:
             with conn.cursor() as cursor:
                 query = f"SELECT {', '.join(columns)} FROM {table_name}"
@@ -145,10 +144,10 @@ def select(table_name, conditions, columns=['*']):
 
 def select_distinct(table_name, columns):
     try:
-        server = config['server']
-        database = config['database']
-        user = config['db_user']
-        password = config['db_password']
+        server = CONFIG['server']
+        database = CONFIG['database']
+        user = CONFIG['db_user']
+        password = CONFIG['db_password']
         with pymssql.connect(server=server, database=database, user=user, password=password) as conn:
             with conn.cursor() as cursor:
                 query = f"SELECT DISTINCT {', '.join(columns)} FROM {table_name}"
@@ -160,11 +159,18 @@ def select_distinct(table_name, columns):
     except Exception as e:
         print(f"Error: {str(e)}")
 
+
 def preprocess_input(image, fixed_size=128):
-    '''
-    
-    '''
-    
+    """
+    Preprocesses an input image by resizing it to a fixed size and normalizing pixel values.
+
+    Parameters:
+        image (numpy.ndarray): Input image as a NumPy array.
+        fixed_size (int): Target size for the image after resizing. Default is 128.
+
+    Returns:
+        numpy.ndarray: Preprocessed image with the specified fixed size.
+    """
     image_size = image.shape[:2] 
     ratio = float(fixed_size)/max(image_size)
     new_size = tuple([int(x*ratio) for x in image_size])
