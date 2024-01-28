@@ -9,19 +9,8 @@ import yaml
 import pymssql
 
 # import constants
-# from data_utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
-from sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
-
-# CONFIG_FILE_PATH = 'config/config.yaml'
-# config = yaml.load(open(CONFIG_FILE_PATH, 'r', encoding='utf-8'), Loader=yaml.FullLoader)
-
-config = {
-    "server": "capstoneservercjault.database.windows.net",
-    "database": "capstoneazure",
-    "db_user": "CloudSA85da88d3",
-    "db_password": "Passwordtest123"
-}
-
+from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
+from utils import CONFIG
 
 def generate_random_evaluation_set(test_size: int = 100000,
                                    train_ids: Optional[Sequence[int]] = None,
@@ -36,7 +25,7 @@ def generate_random_evaluation_set(test_size: int = 100000,
             Default is [-1]
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
-            Default values are taken from the `config` dictionary.
+            Default values are taken from the `CONFIG` dictionary.
     Returns:
         None
     """
@@ -91,7 +80,7 @@ def get_test_set_df(model_id: int,
             Other option is "MODEL_EVALUATION_NON_TEST", which gathers all non-test labels.
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
-            Default values are taken from the `config` dictionary.
+            Default values are taken from the `CONFIG` dictionary.
     Returns:
         pd.DataFrame: A DataFrame containing image metadata and model predictions for a given model_id.
             Columns: IMAGE_ID, PRED_LABEL, CONSENSUS
@@ -131,7 +120,7 @@ def get_label_rank_df(model_id: int,
         random_ratio (float, optional): The ratio of random images in the batch (default is 0.5).
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
-            Default values are taken from the `config` dictionary.
+            Default values are taken from the `CONFIG` dictionary.
     Returns:
         pd.DataFrame: A DataFrame containing image metadata ranked by dissimilarity and label count.
             Columns: IMAGE_ID, BLOB_FILEPATH, UNCERTAINTY, PRED_LABEL, PROBS, RANK_SCORE
@@ -208,13 +197,11 @@ def get_train_df(model_id: int,
             Default is [-1]
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
-            Default values are taken from the `config` dictionary.
+            Default values are taken from the `CONFIG` dictionary.
     Returns:
         pd.DataFrame: A DataFrame containing image metadata ranked by dissimilarity and label count.
             Columns: IMAGE_ID, BLOB_FILEPATH, ALL_LABELS, LABEL_PERCENTS, UNCERTAINTY
     """
-
-
     def generate_class_vectors(row, all_classes):
         # Apply the function to create the 'ClassVectors' column
         #
@@ -290,15 +277,15 @@ def get_server_arguments(server_args: Optional[Dict[str, str]] = {}) -> Tuple[st
     Parameters
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
-            Default values are taken from the `config` dictionary.
+            Default values are taken from the `CONFIG` dictionary.
     Returns:
         Tuple: a tuple containing the strings for server, database, username, and password
     """
     # if new parameters are passed, load from dict or use config file
-    server = server_args.get('server', config['server'])
-    database = server_args.get('database', config['database'])
-    user = server_args.get('username', config['db_user'])
-    password = server_args.get('password', config['db_password'])
+    server = server_args.get('server', CONFIG['server'])
+    database = server_args.get('database', CONFIG['database'])
+    user = server_args.get('username', CONFIG['db_user'])
+    password = server_args.get('password', CONFIG['db_password'])
 
     return server, database, user, password
 
@@ -316,7 +303,7 @@ def execute_stored_procedure(sp: str,
             Values should be either int, float, or str, depending on the stored procedure.
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
-            Default values are taken from the `config` dictionary.
+            Default values are taken from the `CONFIG` dictionary.
     Returns:
         pd.DataFrame: The result of the stored procedure in a Pandas DataFrame format
                       or None if the stored procedure didn't return any results.
@@ -377,7 +364,7 @@ def create_alter_stored_procedure(sp_name: str, file_path: Optional[str] = None,
         file_path (str): The path to the SQL script file containing the stored procedure.
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
-            Default values are taken from the `config` dictionary.
+            Default values are taken from the `CONFIG` dictionary.
 
     Returns:
         None: The function does not return any value.
