@@ -77,6 +77,7 @@ def generate_random_evaluation_set(test_size: int = 100000,
 
 def get_test_set_df(model_id: int,
                     minimum_percent: Optional[float] = 0.0,
+                    sp_name : Optional[str] = 'MODEL_EVALUATION_MAX_CONSENSUS_FILTERING',
                     server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
     """
     Get all labeled test data along with model predictions for a given model_id.
@@ -85,6 +86,9 @@ def get_test_set_df(model_id: int,
         model_id (int): The identifier of a specific model to evaluate.
         minimum_percent (float): A minimum threshold of % agreement among labels for a given image.
             Default is 0.0, signifying no filtering
+        sp_name (str): The name of the stored procedure to get "test" set for evaluation.
+            Default is "MODEL_EVALUATION_MAX_CONSENSUS_FILTERING", which actually generates a test set.
+            Other option is "MODEL_EVALUATION_NON_TEST", which gathers all non-test labels.
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
             Default values are taken from the `config` dictionary.
@@ -92,6 +96,10 @@ def get_test_set_df(model_id: int,
         pd.DataFrame: A DataFrame containing image metadata and model predictions for a given model_id.
             Columns: IMAGE_ID, PRED_LABEL, CONSENSUS
     """
+    # Check that the sp_name is valid
+    valid_sp_names = {'MODEL_EVALUATION_MAX_CONSENSUS_FILTERING', 'MODEL_EVALUATION_NON_TEST'}
+    if sp_name not in valid_sp_names:
+        raise ValueError(f"Invalid sp_name {sp_name}, expected one of these two: {valid_sp_names}.")
     # Call stored procedure for getting metric data
     args = OrderedDict([
         ("MODEL_ID", model_id),
@@ -100,7 +108,7 @@ def get_test_set_df(model_id: int,
     if (minimum_percent < 0.0) or (minimum_percent > 1.0):
         raise ValueError("The minimum_percent must be a positive float between 0.0 and 1.0")
 
-    df = execute_stored_procedure(sp="MODEL_EVALUATION_MAX_CONSENSUS_FILTERING", args=args, server_args=server_args)
+    df = execute_stored_procedure(sp=sp_name, args=args, server_args=server_args)
 
     return df
 

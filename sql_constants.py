@@ -30,7 +30,7 @@ SP_ARGS_TYPE_MAPPING: Dict[str, Optional[OrderedDict[str, Any]]] = {
 # File names for stored procedures
 SP_FILE_NAMES: Dict[str, str] = {
     "AL_RANKINGS": "./stored_procedures/Labeling_Ranking.sql",
-    "MODEL_EVALUATION_MAX_CONSENSUS": "./stored_procedures/Model_Evaluation.sql",
+    "MODEL_EVALUATION_NON_TEST": "./stored_procedures/Model_Evaluation_NonTest.sql",
     "MODEL_EVALUATION_MAX_CONSENSUS_FILTERING": "./stored_procedures/Model_Evaluation_Filtering.sql",
     "AL_TRAIN_SET": "./stored_procedures/Model_Training.sql",
     "GENERATE_RANDOM_TEST_SET": "./stored_procedures/Generate_Random_Test_Set.sql"
