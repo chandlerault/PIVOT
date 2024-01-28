@@ -3,3 +3,8 @@ connection_string: DefaultEndpointsProtocol=https;AccountName=capstoneexperiment
 metrics_container: metrics
 metrics_blob: metrics1.parquet
 image_container: naames
+
+server: capstoneservercjault.database.windows.net
+database: capstoneazure
+db_user: CloudSA85da88d3
+db_password: Passwordtest123
