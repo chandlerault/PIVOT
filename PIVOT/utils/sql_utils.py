@@ -12,6 +12,34 @@ import pymssql
 from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
 from utils import CONFIG
 
+
+def images_to_predict_df(model_id: int,
+                         server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
+    """
+    Get a DataFrame containing the image IDs that need predictions for a given model id.
+    Calls the GENERATE_IMAGES_TO_PREDICT stored procedure.
+
+    Parameters:
+        model_id (int): The identifier of the model.
+        server_args (dict, optional): A dictionary containing connection parameters for the server.
+            Expected keys: 'server', 'database', 'username', 'password'.
+            Default values are taken from the `CONFIG` dictionary.
+    Returns:
+        pd.DataFrame: A DataFrame containing image metadata.
+            Columns: IMAGE_ID, BLOB_FILEPATH
+    """
+    # Check basic arguments:
+    args = OrderedDict([
+        ("MODEL_ID", model_id)
+    ])
+    # check types
+    validate_args("GENERATE_IMAGES_TO_PREDICT", args)
+    # execute stored procedure
+    df = execute_stored_procedure(sp="GENERATE_IMAGES_TO_PREDICT", args=args, server_args=server_args)
+
+    return df
+
+
 def generate_random_evaluation_set(test_size: int = 100000,
                                    train_ids: Optional[Sequence[int]] = None,
                                    server_args: Optional[Dict[str, str]] = {}) -> None:
