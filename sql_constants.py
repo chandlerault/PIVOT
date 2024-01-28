@@ -4,8 +4,8 @@ from typing import Dict, Any, Optional
 # Matching argument types for stored procedures
 SP_ARGS_TYPE_MAPPING: Dict[str, Optional[OrderedDict[str, Any]]] = {
     "AL_RANKINGS": OrderedDict([
-        ('M_ID', int),
-        ('D_ID', int),
+        ('MODEL_ID', int),
+        ('D_METRIC_ID', int),
         ('RELABEL_LAMBDA', float),
         ('BATCH_SIZE', int)
     ]),
@@ -21,6 +21,10 @@ SP_ARGS_TYPE_MAPPING: Dict[str, Optional[OrderedDict[str, Any]]] = {
         ('D_METRIC_ID', int),
         ('TRAIN_SIZE', int)
     ]),
+    "GENERATE_RANDOM_TEST_SET": OrderedDict([
+        ('TEST_SIZE', int),
+        ('IMAGE_IDS', str)
+    ])
 }
 
 # File names for stored procedures
@@ -28,5 +32,6 @@ SP_FILE_NAMES: Dict[str, str] = {
     "AL_RANKINGS": "./stored_procedures/Labeling_Ranking.sql",
     "MODEL_EVALUATION_MAX_CONSENSUS": "./stored_procedures/Model_Evaluation.sql",
     "MODEL_EVALUATION_MAX_CONSENSUS_FILTERING": "./stored_procedures/Model_Evaluation_Filtering.sql",
-    "AL_TRAIN_SET": "./stored_procedures/Model_Training.sql"
+    "AL_TRAIN_SET": "./stored_procedures/Model_Training.sql",
+    "GENERATE_RANDOM_TEST_SET": "./stored_procedures/Generate_Random_Test_Set.sql"
 }
