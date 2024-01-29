@@ -255,7 +255,7 @@ def get_train_df(model_id: int,
         ("MODEL_ID", model_id),
         ("D_METRIC_ID", dissimilarity_id),
         ("TRAIN_SIZE", train_size),
-        ("TRAIN_IDS", train_ids)
+        ("IMAGE_IDS", train_ids)
     ])
     # check types
     validate_args("AL_TRAIN_SET", args)
@@ -264,10 +264,11 @@ def get_train_df(model_id: int,
         raise ValueError("The batch_size must be a positive integer.")
     # Execute stored procedure
     df = execute_stored_procedure(sp='AL_TRAIN_SET', args=args, server_args=server_args)
+    print(df)
     # Generate single class label
-    df['OneLabel'] = df['ALL_LABELS'].str.split(',', expand=True)[0]
-    class_vectors = df.apply(lambda row: generate_class_vectors(row, all_classes), axis=1)
-    df['class_vectors'] = class_vectors
+    # df['OneLabel'] = df['ALL_LABELS'].str.split(',', expand=True)[0]
+    # class_vectors = df.apply(lambda row: generate_class_vectors(row, all_classes), axis=1)
+    # df['class_vectors'] = class_vectors
     return df
 
 

@@ -17,7 +17,6 @@ BEGIN
         SELECT I_ID,
                LABEL,
                SUM(WEIGHT) AS W_COUNT,
-               SUM(WEIGHT) AS W_COUNT,
 --                SUM(SUM(WEIGHT)) OVER (PARTITION BY I_ID) AS TOTAL_SUM,
                CAST(SUM(WEIGHT) AS FLOAT) / (SUM(SUM(WEIGHT)) OVER (PARTITION BY I_ID)) as PERCENT_CONSENSUS
         FROM LABELS
