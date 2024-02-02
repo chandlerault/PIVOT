@@ -183,7 +183,7 @@ def get_label_rank_df(model_id: int,
         d_df = None
     # Call stored procedure for label ranking with D_ID = 0 (represents random images)
     if batch_size_r > 0:
-        args['D_ID'] = 0
+        args['D_METRIC_ID'] = 0
         args['BATCH_SIZE'] = batch_size_r
         r_df = execute_stored_procedure(sp="AL_RANKINGS", args=args, server_args=server_args)
     else:
