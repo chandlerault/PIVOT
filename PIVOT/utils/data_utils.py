@@ -141,6 +141,7 @@ def select(table_name, conditions, columns=['*']):
                 return result
     except Exception as e:
         print(f"Error: {str(e)}")
+        return []
 
 def select_distinct(table_name, columns):
     try:
@@ -158,7 +159,25 @@ def select_distinct(table_name, columns):
                 return result
     except Exception as e:
         print(f"Error: {str(e)}")
+        return []
 
+def get_status():
+    try:
+        server = CONFIG['server']
+        database = CONFIG['database']
+        user = CONFIG['db_user']
+        password = CONFIG['db_password']
+        with pymssql.connect(server=server, database=database, user=user, password=password) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT state_desc FROM sys.databases WHERE name = %s", (database,))
+                row = cursor.fetchone()
+                if row and row[0] == 'ONLINE':
+                    return True
+                else:
+                    return False
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return False
 
 def preprocess_input(image, fixed_size=128):
     """

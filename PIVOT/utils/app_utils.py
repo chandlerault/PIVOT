@@ -2,6 +2,8 @@ from utils import data_utils
 from PIL import Image
 import numpy as np
 import cv2
+import time
+
 
 def create_user(user_info):
     """
@@ -28,7 +30,7 @@ def get_user(email):
         u_id (int/None): The u_id for the user with the email. Otherwise None.
     """
     user = data_utils.select('users', {'email':email}, ['u_id']) 
-    if len(user) > 0:
+    if user and len(user) > 0:
         return user[0]['u_id']
     else:
         return None
@@ -73,3 +75,12 @@ def get_image(file_path):
     # image = Image.open(BytesIO(image_contents))
     return Image.fromarray(im.reshape(im.shape[:2]))
 
+def await_connection(max_time=60, step=5):
+    for _ in range(max_time//step):
+          if data_utils.get_status():
+               return True
+          time.sleep(step)
+    return False
+
+def insert_label(labels):
+     data_utils.insert_data('labels', labels) 
