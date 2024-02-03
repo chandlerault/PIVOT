@@ -49,7 +49,7 @@ class NumpyArrayEncoder(JSONEncoder):
 
 # cloud_urls = cloud_urls[:100]
 
-def get_predictions(df, scoring_uri, api_key):
+def predict(df, scoring_uri, api_key):
     """
     Afhwefuhr ef
     
@@ -77,17 +77,23 @@ def get_predictions(df, scoring_uri, api_key):
 
     # The azureml-model-deployment header will force the request to go to a specific deployment.
     # TODO: figure out how to get 'azureml-model-deployment'
-    headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': 'pivot-basemodel' }
+    headers = {'Content-Type':'application/json',
+               'Authorization':('Bearer '+ api_key),
+               'azureml-model-deployment': 'pivot-basemodel' }
 
     # Make the prediction request
     response = requests.post(scoring_uri, data=json_payload, headers=headers)
+    print(response)
 
     # Check the response status code
     if response.status_code == 200:
         result = response.json()
+        print(result)
     else:
         print("Prediction request failed with status code:", response.status_code)
         print(response.text)
-        
-    return pd.DataFrame({'i_id': df.IMAGE_ID.values, 
+    
+    df = pd.DataFrame({'i_id': df.IMAGE_ID.values, 
                          'probs': result})
+    
+    return df

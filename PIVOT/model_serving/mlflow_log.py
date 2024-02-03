@@ -37,8 +37,8 @@ import mlflow.keras
 
 from azureml.core import Workspace, Model as AzureMLWorkspaceModel
 
-with open("config.yaml") as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
+# with open("config.yaml") as f:
+#     config = yaml.load(f, Loader=yaml.FullLoader)
 
 def log_model(model, ml_client, run_name):
     """
