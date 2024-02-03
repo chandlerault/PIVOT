@@ -121,7 +121,7 @@ def main():
         diss_dic = {}
         diss_names = []
 
-        for j in range(0, len(dissimilarities)):
+        for j in range(1, len(dissimilarities)):
             diss_names.append(dissimilarities[j]['d_id'])
             diss_dic[dissimilarities[j]['d_id']] = dissimilarities[j]['name']
 
@@ -236,7 +236,7 @@ def main():
                 if user_add and not user_account:
                     st.error("Please submit your user information!")
                 elif user_add and user_account:
-                    new_df.loc[count] = [label_df.iloc[count]['IMAGE_ID'], user_account[0], user_label]
+                    new_df.loc[count] = [label_df.iloc[count]['IMAGE_ID'], user_account['u_id'], user_label]
         
                 st.divider()
             submitted = st.form_submit_button("Submit")
