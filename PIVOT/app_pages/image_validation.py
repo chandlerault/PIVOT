@@ -201,7 +201,7 @@ def main():
                 Image Validation</h3>""",
                 unsafe_allow_html=True)
     
-    new_df = pd.DataFrame(columns=['i_id', 'u_id', 'label'])
+    new_df = pd.DataFrame(columns=['i_id', 'u_id', 'weight', 'label'])
 
     if not label_df.empty:
         with st.form('image_validation_form', clear_on_submit=False):
@@ -236,7 +236,10 @@ def main():
                 if user_add and not user_account:
                     st.error("Please submit your user information!")
                 elif user_add and user_account:
-                    new_df.loc[count] = [label_df.iloc[count]['IMAGE_ID'], user_account['u_id'], user_label]
+                    new_df.loc[count] = [label_df.iloc[count]['IMAGE_ID'],
+                                         user_account['u_id'],
+                                         user_account['experience'],
+                                         user_label]
         
                 st.divider()
             submitted = st.form_submit_button("Submit")
@@ -244,6 +247,7 @@ def main():
                 st.markdown("""<h5 style='text-align: left; color: black;'>
                     Your responses have been recorded!</h5>""",
                     unsafe_allow_html=True)
+                app_utils.insert_label(new_df)
             elif submitted and not user_account:
                 st.markdown("""<h5 style='text-align: left; color: black;'>
                     Please resubmit once your user information has been recorded.</h5>""",
