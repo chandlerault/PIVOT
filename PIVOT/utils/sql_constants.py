@@ -41,6 +41,5 @@ SP_FILE_NAMES: Dict[str, str] = {
     "AL_TRAIN_SET": "./stored_procedures/Model_Training.sql",
     "GENERATE_RANDOM_TEST_SET": "./stored_procedures/Generate_Random_Test_Set.sql",
     "GENERATE_IMAGES_TO_PREDICT": "./stored_procedures/Image_To_Predict.sql"
-
 }
 

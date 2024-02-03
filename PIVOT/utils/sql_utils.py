@@ -5,12 +5,12 @@ from collections import OrderedDict
 from collections.abc import Sequence
 import pandas as pd
 
-import yaml
 import pymssql
 
 # import constants
 from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
 from utils import CONFIG
+
 
 def generate_random_evaluation_set(test_size: int = 100000,
                                    train_ids: Optional[Sequence[int]] = None,
@@ -202,9 +202,20 @@ def get_train_df(model_id: int,
         pd.DataFrame: A DataFrame containing image metadata ranked by dissimilarity and label count.
             Columns: IMAGE_ID, BLOB_FILEPATH, ALL_LABELS, LABEL_PERCENTS, UNCERTAINTY
     """
-    def generate_class_vectors(row, all_classes):
-        # Apply the function to create the 'ClassVectors' column
-        #
+    def generate_class_vectors(row: pd.Series, all_classes: list) -> list:
+        """
+        Apply the function to create the 'ClassVectors' column:
+            a vector of label probabilities for each class based on the relative frequency
+            of user labels.
+
+        Note that this function isn't currently used.
+        Parameters:
+            row: a row of a pd.DataFrame that contains 'PercentConsensus' and 'Labels'.
+            all_classes: a list of the classes in the order for training.
+
+        Return:
+            list of relative frequencies for each class in all_classes.
+        """
 
         labels = row['Labels'].split(', ')
         percent_consensus = [float(val) for val in row['PercentConsensus'].split(', ')]
