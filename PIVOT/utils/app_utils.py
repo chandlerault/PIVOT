@@ -82,5 +82,6 @@ def await_connection(max_time=60, step=5):
           time.sleep(step)
     return False
 
-def insert_label(labels):
+def insert_label(df):
+     labels = df.to_dict(orient='records')
      data_utils.insert_data('labels', labels) 
