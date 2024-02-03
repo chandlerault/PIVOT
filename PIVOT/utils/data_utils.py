@@ -52,7 +52,6 @@ def get_blob_bytes(blob_path):
     if not isinstance(blob_path, str):
         raise TypeError("filepath must be a string")
 
-
     connection_string = CONFIG['connection_string2'] # TODO: eventually make this one connection string.
     container_name = CONFIG['image_container']
 
@@ -67,7 +66,7 @@ def get_blob_bytes(blob_path):
 
     blob_data = blob_client.download_blob()
     content = blob_data.readall()
-
+    
     return content        
 
 def insert_data(table_name, data):
@@ -159,6 +158,23 @@ def select_distinct(table_name, columns):
     except Exception as e:
         print(f"Error: {str(e)}")
 
+def get_status():
+    try:
+        server = CONFIG['server']
+        database = CONFIG['database']
+        user = CONFIG['db_user']
+        password = CONFIG['db_password']
+        with pymssql.connect(server=server, database=database, user=user, password=password) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT state_desc FROM sys.databases WHERE name = %s", (database,))
+                row = cursor.fetchone()
+                if row and row[0] == 'ONLINE':
+                    return True
+                else:
+                    return False
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return False
 
 def preprocess_input(image, fixed_size=128):
     """

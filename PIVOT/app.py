@@ -6,6 +6,8 @@ from PIL import Image
 
 from app_pages import image_validation
 from app_pages import dashboard
+from app_pages import resources
+from app_pages import about
 
 # Set current working directory to .
 cwd = os.getcwd()
@@ -51,8 +53,10 @@ with st.sidebar:
     selected = option_menu(
         menu_title="",
         options=["Image Validation",
-                 "Summary Metrics"],
-        icons=['chevron-right', 'chevron-right'],
+                 "Summary Metrics",
+                 "Resources",
+                 "About"],
+        icons=['chevron-right', 'chevron-right', 'chevron-right', 'chevron-right'],
         default_index=0,
         styles={
         "container": {"padding": "0!important", "background-color": "#052e4a"},
@@ -63,19 +67,45 @@ with st.sidebar:
         }
     )
 
-    # Add buttons to Safety Data Sheet and Hazard Assesmment external links
+    # Add buttons to UTOPIA GitHub page
     st.markdown("""<h5 style='text-align: left; color: white;'>
-                This is a space where we can link important information.</h5>""",
+                Links to relavent GitHub repositories:</h5>""",
                 unsafe_allow_html=True)
-    URL_STRING_SDS = "https://google.com"
+    
+    URL_STRING_GITHUB = "https://github.com/ifcb-utopia"
     st.markdown(
-        f'<a href="{URL_STRING_SDS}" style="display: inline-block; width: 100%; padding-top: 5px; padding-bottom: 5px; background-color: #51bfff; font-weight: bold; color: black; text-align: center; border-radius: 4px;">Some Link! \N{ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS}</a>',
+        f'<a href="{URL_STRING_GITHUB}" style="display: inline-block; width: 100%; padding-top: 5px; padding-bottom: 5px; background-color: #51bfff; font-weight: bold; color: black; text-align: center; border-radius: 4px;">ifcb-utopia \N{ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS}</a>',
         unsafe_allow_html=True)
+    
+    st.markdown("""<p style='text-align: left; color: white;'>
+                </br>Select to view examples: </p>""",
+                unsafe_allow_html=True)
+    
+    example_options = ["Chloro",
+                       "Cilliate",
+                       "Crypto",
+                       "Diatom",
+                       "Dictyo",
+                       "Dinoflagellate",
+                       "Eugleno",
+                       "Unidentified",
+                       "Prymnesio",
+                       "Not Phytoplankton"]
+
+    example_image = st.selectbox(options=example_options,
+                                label_visibility ='collapsed',
+                                label='examples',
+                                index=None)
+    if example_image == example_options[0]:
+        st.write('Images HERE')
+        st.write('Button to links HERE')
 
 # Run specific app_page scrip when a page is selected from nav sidebar
 if selected == "Image Validation":
     image_validation.main()
-
-if selected == "Summary Metrics":
-
+elif selected == "Summary Metrics":
     dashboard.main()
+elif selected == "Resources":
+    resources.main()
+elif selected == "About":
+    about.main()

@@ -6,6 +6,8 @@ import numpy as np
 
 from sklearn.metrics import precision_score, recall_score, confusion_matrix, classification_report
 
+from utils import sql_utils
+from utils import app_utils
 
 def get_percent(row, c): 
     val = row[c]
@@ -52,7 +54,7 @@ def plot_precision_recall(class_labels, x_labels, precision, recall, spacing):
     plt.bar(x_labels + 0.2, recall, spacing, label="Recall", color='#04712f')
 
     plt.xticks(x_labels, class_labels, rotation=45)
-    plt.xlabel("Phytoplanton Classes") 
+    plt.xlabel("Phytoplankton Classes") 
     plt.ylabel("Performance")
     plt.title("Model Performance: Precision and Recall") 
     plt.legend()
@@ -64,7 +66,7 @@ def plot_f1_score(class_labels, f1_score):
     plt.bar(class_labels, f1_score, color='#0d205f')
 
     plt.xticks(class_labels, rotation=45)
-    plt.xlabel("Phytoplanton Classes") 
+    plt.xlabel("Phytoplankton Classes") 
     plt.ylabel("F1 Score")
     plt.title("Model Performance: F1 Score") 
 
@@ -88,7 +90,7 @@ def main():
     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
     st.markdown("""<h3 style='text-align: left; color: black;'>
-                Trained Model Summary</h4>""",
+                Model Train Summary</h3>""",
                 unsafe_allow_html=True)
 
     class_labels = ["Chloro", "Cilliate", "Crypto", "Diatom", "Dictyo", "Dino", "Eugleno", "Unident.", "Prymnesio", "null"]
@@ -105,6 +107,12 @@ def main():
     st.write("Accuracy: ", model_acc)
     st.write("Precision: ", model_prec)
     st.write("Recall: ", model_recall)
+
+    st.markdown("""<h1></h1>""", unsafe_allow_html=True)
+
+    st.markdown("""<h6 style='text-align: left; color: black;'>
+                Filter Phytoplankton Subcategories</h6>""",
+                unsafe_allow_html=True)
 
     filtered_phyto = list(range(0,10,1))
 
@@ -125,6 +133,8 @@ def main():
         filtered_phyto[4] = st.checkbox(class_labels[4], value=1)
         filtered_phyto[9] = st.checkbox(class_labels[9], value=1)
 
+    st.markdown("""<h1></h1>""", unsafe_allow_html=True)
+
     count = 0
 
     for i in range(0,len(filtered_phyto)):
@@ -134,9 +144,9 @@ def main():
             i = i-count
             del class_labels[i]
             count = count + 1
-    
-    left_2, right_2 = st.columns(2)
-    with left_2:
+
+    left_1, right_1 = st.columns(2)
+    with left_1:
         c_report = get_classification_report(model_pred.true_label,model_pred.pred_label)
         c_report = c_report.drop(['weighted avg','accuracy','macro avg']).sort_index()
         c_report = c_report.assign(class_label=class_labels)
@@ -151,8 +161,7 @@ def main():
         cm_fig = plot_confusion_matrix(cm, classes=class_labels, normalize=True, title='Confusion Matrix')
         st.pyplot(cm_fig)
 
-        
-    with right_2:
+    with right_1:
         c_report = c_report.sort_values(by=['f1-score'], ascending=False)
         f1_plot = plot_f1_score(c_report['class_label'], c_report['f1-score'])
         st.pyplot(f1_plot)
@@ -160,6 +169,25 @@ def main():
     st.divider()
 
     st.markdown("""<h3 style='text-align: left; color: black;'>
-                Unseen Model Summary</h4>""",
+                Model Test Summary</h3>""",
                 unsafe_allow_html=True)
+    
+    left_2, right_2 = st.columns(2)
+    with left_2:
+        models = app_utils.get_models()
+        model_dic = {}
+        model_names = []
+
+        for i in range(1,len(models)):
+            model_names.append(models[i]['m_id'])
+            model_dic[models[i]['m_id']] = models[i]['model_name']
+
+        selected_model = st.selectbox(label='Select the model you wish to validate:',
+                                    options=tuple(model_names),
+                                    format_func=model_dic.__getitem__,
+                                    index=None)
+
+        validated_df = sql_utils.get_test_set_df(selected_model)
+        st.write(validated_df)
+
 

@@ -43,3 +43,4 @@ SP_FILE_NAMES: Dict[str, str] = {
     "GENERATE_IMAGES_TO_PREDICT": "./stored_procedures/Image_To_Predict.sql"
 
 }
+
