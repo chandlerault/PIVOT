@@ -67,11 +67,9 @@ with st.sidebar:
         }
     )
 
-    # Add buttons to Safety Data Sheet and Hazard Assesmment external links
+    # Add buttons to UTOPIA GitHub page
     st.markdown("""<h5 style='text-align: left; color: white;'>
-                User-friendly Tools for Oceanic Plankton Image Analysis (UTOPIA)
-                GitHub that process Imaging FlowCytobot (IFCB) data and explores the
-                use of CNNs for IFCB image classifcation. </h5>""",
+                Links to relavent GitHub repositories:</h5>""",
                 unsafe_allow_html=True)
     
     URL_STRING_GITHUB = "https://github.com/ifcb-utopia"
@@ -79,21 +77,28 @@ with st.sidebar:
         f'<a href="{URL_STRING_GITHUB}" style="display: inline-block; width: 100%; padding-top: 5px; padding-bottom: 5px; background-color: #51bfff; font-weight: bold; color: black; text-align: center; border-radius: 4px;">ifcb-utopia \N{ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS}</a>',
         unsafe_allow_html=True)
     
-    st.markdown("""<h5 style='text-align: left; color: white;'>
-                Hiii</h5>""",
+    st.markdown("""<p style='text-align: left; color: white;'>
+                </br>Select to view examples: </p>""",
                 unsafe_allow_html=True)
-    st.selectbox(options=["Chloro",
-                          "Cilliate",
-                          "Crypto",
-                          "Diatom",
-                          "Dictyo",
-                          "Dinoflagellate",
-                          "Eugleno",
-                          "Unidentified",
-                          "Prymnesio",
-                          "Not Phytoplankton"],
-                 label_visibility ='hidden',
-                 label='')
+    
+    example_options = ["Chloro",
+                       "Cilliate",
+                       "Crypto",
+                       "Diatom",
+                       "Dictyo",
+                       "Dinoflagellate",
+                       "Eugleno",
+                       "Unidentified",
+                       "Prymnesio",
+                       "Not Phytoplankton"]
+
+    example_image = st.selectbox(options=example_options,
+                                label_visibility ='collapsed',
+                                label='examples',
+                                index=None)
+    if example_image == example_options[0]:
+        st.write('Images HERE')
+        st.write('Button to links HERE')
 
 # Run specific app_page scrip when a page is selected from nav sidebar
 if selected == "Image Validation":

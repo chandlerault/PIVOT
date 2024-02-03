@@ -6,6 +6,8 @@ import numpy as np
 
 from sklearn.metrics import precision_score, recall_score, confusion_matrix, classification_report
 
+from utils import sql_utils
+from utils import app_utils
 
 def get_percent(row, c): 
     val = row[c]
@@ -172,10 +174,20 @@ def main():
     
     left_2, right_2 = st.columns(2)
     with left_2:
-        test_model = st.selectbox(label='Select the model of interest:',
-                                    options=('xxx', 'yyy', 'zzz'),
-                                    format_func={'xxx': 'CNN ver. 1',
-                                                'yyy': 'CNN ver. 2',
-                                                'zzz': 'CNN ver. 3'}.__getitem__,
+        models = app_utils.get_models()
+        model_dic = {}
+        model_names = []
+
+        for i in range(1,len(models)):
+            model_names.append(models[i]['m_id'])
+            model_dic[models[i]['m_id']] = models[i]['model_name']
+
+        selected_model = st.selectbox(label='Select the model you wish to validate:',
+                                    options=tuple(model_names),
+                                    format_func=model_dic.__getitem__,
                                     index=None)
+
+        validated_df = sql_utils.get_test_set_df(selected_model)
+        st.write(validated_df)
+
 
