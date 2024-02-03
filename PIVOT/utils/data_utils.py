@@ -52,7 +52,6 @@ def get_blob_bytes(blob_path):
     if not isinstance(blob_path, str):
         raise TypeError("filepath must be a string")
 
-
     connection_string = CONFIG['connection_string2'] # TODO: eventually make this one connection string.
     container_name = CONFIG['image_container']
 
@@ -67,7 +66,7 @@ def get_blob_bytes(blob_path):
 
     blob_data = blob_client.download_blob()
     content = blob_data.readall()
-
+    
     return content        
 
 def insert_data(table_name, data):
@@ -141,7 +140,6 @@ def select(table_name, conditions, columns=['*']):
                 return result
     except Exception as e:
         print(f"Error: {str(e)}")
-        return []
 
 def select_distinct(table_name, columns):
     try:
@@ -159,7 +157,6 @@ def select_distinct(table_name, columns):
                 return result
     except Exception as e:
         print(f"Error: {str(e)}")
-        return []
 
 def get_status():
     try:

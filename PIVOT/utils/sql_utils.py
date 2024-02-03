@@ -457,3 +457,4 @@ def run_sql_query(query: str, server_args: Optional[Dict[str, str]] = {}) -> Uni
     df = pd.DataFrame(results, columns=columns)
 
     return df
+  
