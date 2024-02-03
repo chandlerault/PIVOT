@@ -66,7 +66,7 @@ def get_blob_bytes(blob_path):
 
     blob_data = blob_client.download_blob()
     content = blob_data.readall()
-    
+    blob_service_client.close()
     return content        
 
 def insert_data(table_name, data):
