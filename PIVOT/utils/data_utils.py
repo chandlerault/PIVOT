@@ -140,6 +140,7 @@ def select(table_name, conditions, columns=['*']):
                 return result
     except Exception as e:
         print(f"Error: {str(e)}")
+        return []
 
 def select_distinct(table_name, columns):
     try:
@@ -157,6 +158,7 @@ def select_distinct(table_name, columns):
                 return result
     except Exception as e:
         print(f"Error: {str(e)}")
+        return []
 
 def get_status():
     try:

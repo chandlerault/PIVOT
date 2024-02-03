@@ -29,9 +29,9 @@ def get_user(email):
     Returns:
         u_id (int/None): The u_id for the user with the email. Otherwise None.
     """
-    user = data_utils.select('users', {'email':email}, ['u_id', 'name', 'experience', 'lab', 'email']) 
+    user = data_utils.select('users', {'email':email}, ['u_id']) 
     if user and len(user) > 0:
-        return user[0]
+        return user[0]['u_id']
     else:
         return None
     
@@ -82,5 +82,6 @@ def await_connection(max_time=60, step=5):
           time.sleep(step)
     return False
 
-def insert_label(labels):
-    data_utils.insert_data('labels', labels) 
+def insert_label(df):
+     labels = df.to_dict(orient='records')
+     data_utils.insert_data('labels', labels) 
