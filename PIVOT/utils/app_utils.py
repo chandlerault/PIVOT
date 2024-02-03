@@ -30,7 +30,7 @@ def get_user(email):
         u_id (int/None): The u_id for the user with the email. Otherwise None.
     """
     user = data_utils.select('users', {'email':email}, ['u_id']) 
-    if user and len(user) > 0:
+    if len(user) > 0:
         return user[0]['u_id']
     else:
         return None

@@ -12,34 +12,6 @@ import pymssql
 from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
 from utils import CONFIG
 
-
-def images_to_predict_df(model_id: int,
-                         server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
-    """
-    Get a DataFrame containing the image IDs that need predictions for a given model id.
-    Calls the GENERATE_IMAGES_TO_PREDICT stored procedure.
-
-    Parameters:
-        model_id (int): The identifier of the model.
-        server_args (dict, optional): A dictionary containing connection parameters for the server.
-            Expected keys: 'server', 'database', 'username', 'password'.
-            Default values are taken from the `CONFIG` dictionary.
-    Returns:
-        pd.DataFrame: A DataFrame containing image metadata.
-            Columns: IMAGE_ID, BLOB_FILEPATH
-    """
-    # Check basic arguments:
-    args = OrderedDict([
-        ("MODEL_ID", model_id)
-    ])
-    # check types
-    validate_args("GENERATE_IMAGES_TO_PREDICT", args)
-    # execute stored procedure
-    df = execute_stored_procedure(sp="GENERATE_IMAGES_TO_PREDICT", args=args, server_args=server_args)
-
-    return df
-
-
 def generate_random_evaluation_set(test_size: int = 100000,
                                    train_ids: Optional[Sequence[int]] = None,
                                    server_args: Optional[Dict[str, str]] = {}) -> None:
@@ -183,7 +155,7 @@ def get_label_rank_df(model_id: int,
         d_df = None
     # Call stored procedure for label ranking with D_ID = 0 (represents random images)
     if batch_size_r > 0:
-        args['D_ID'] = 0
+        args['D_METRIC_ID'] = 0
         args['BATCH_SIZE'] = batch_size_r
         r_df = execute_stored_procedure(sp="AL_RANKINGS", args=args, server_args=server_args)
     else:
@@ -255,7 +227,7 @@ def get_train_df(model_id: int,
         ("MODEL_ID", model_id),
         ("D_METRIC_ID", dissimilarity_id),
         ("TRAIN_SIZE", train_size),
-        ("IMAGE_IDS", train_ids)
+        ("TRAIN_IDS", train_ids)
     ])
     # check types
     validate_args("AL_TRAIN_SET", args)
@@ -264,11 +236,10 @@ def get_train_df(model_id: int,
         raise ValueError("The batch_size must be a positive integer.")
     # Execute stored procedure
     df = execute_stored_procedure(sp='AL_TRAIN_SET', args=args, server_args=server_args)
-    print(df)
     # Generate single class label
-    # df['OneLabel'] = df['ALL_LABELS'].str.split(',', expand=True)[0]
-    # class_vectors = df.apply(lambda row: generate_class_vectors(row, all_classes), axis=1)
-    # df['class_vectors'] = class_vectors
+    df['OneLabel'] = df['ALL_LABELS'].str.split(',', expand=True)[0]
+    class_vectors = df.apply(lambda row: generate_class_vectors(row, all_classes), axis=1)
+    df['class_vectors'] = class_vectors
     return df
 
 
@@ -486,3 +457,4 @@ def run_sql_query(query: str, server_args: Optional[Dict[str, str]] = {}) -> Uni
     df = pd.DataFrame(results, columns=columns)
 
     return df
+  
