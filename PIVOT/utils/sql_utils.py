@@ -12,6 +12,52 @@ from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
 from utils import CONFIG
 
 
+def get_images_to_metrize(model_id: int, dissimilarity_id: int,
+                          server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
+    """
+    Get all new images that need scores calculated for a given model and dissimilarity/uncertainty ID.
+
+    Parameters:
+        model_id (int): The identifier of a specific model used for predictions
+        dissimilarity_id (int): The identifier for the various dissimilarity/uncertainty measures of images.
+        server_args (dict, optional): A dictionary containing connection parameters for the server.
+            Expected keys: 'server', 'database', 'username', 'password'.
+            Default values are taken from the `CONFIG` dictionary.
+    Returns:
+        pd.DataFrame: A DataFrame containing image metadata and model predictions for a given model_id.
+            Columns: IMAGE_ID, PROBS
+    """
+    # Call stored procedure for getting metric data
+    args = OrderedDict([
+        ("MODEL_ID", model_id),
+        ("D_METRIC_ID", dissimilarity_id)
+    ])
+    df = execute_stored_procedure(sp="GENERATE_IMAGES_TO_METRIZE", args=args, server_args=server_args)
+    return df
+
+
+def get_images_to_predict(model_id: int,
+                          server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
+    """
+    Get all new images that need model predictions for a given model_id.
+
+    Parameters:
+        model_id (int): The identifier of a specific model to predict with.
+        server_args (dict, optional): A dictionary containing connection parameters for the server.
+            Expected keys: 'server', 'database', 'username', 'password'.
+            Default values are taken from the `CONFIG` dictionary.
+    Returns:
+        pd.DataFrame: A DataFrame containing image metadata.
+            Columns: IMAGE_ID, BLOB_FILEPATH
+    """
+    # Call stored procedure for getting metric data
+    args = OrderedDict([
+        ("MODEL_ID", model_id)
+    ])
+    df = execute_stored_procedure(sp="GENERATE_IMAGES_TO_PREDICT", args=args, server_args=server_args)
+    return df
+
+
 def generate_random_evaluation_set(test_size: int = 100000,
                                    train_ids: Optional[Sequence[int]] = None,
                                    server_args: Optional[Dict[str, str]] = {}) -> None:
@@ -114,7 +160,7 @@ def get_label_rank_df(model_id: int,
 
     Parameters:
         model_id (int): The identifier of the model.
-        dissimilarity_id (int): The identifier for dissimilarity images.
+        dissimilarity_id (int): The identifier for the various dissimilarity/uncertainty measures of images.
         batch_size (int, optional): The total batch size for label ranking (default is 100).
         relabel_lambda (float, optional): The relabeling lambda parameter (default is 0.069).
         random_ratio (float, optional): The ratio of random images in the batch (default is 0.5).
@@ -190,7 +236,7 @@ def get_train_df(model_id: int,
 
     Parameters:
         model_id (int): The identifier of the model.
-        dissimilarity_id (int): The identifier for dissimilarity images.
+        dissimilarity_id (int): The identifier for the various dissimilarity/uncertainty measures of images.
         all_classes (list): A sorted set of all classes for the model.
         train_size (int, optional): The total train size for finetuning(default is 100).
         train_ids (list): A set of image IDs for images that have already been used for training.

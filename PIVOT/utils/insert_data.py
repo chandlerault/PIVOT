@@ -16,7 +16,7 @@ import concurrent.futures
 import pymssql
 
 
-def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, batch_size: int = 320,
+def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, batch_size: int = 1000,
                       return_val_paths: bool = False, **kwargs) -> Union[None, list[str]]:
     """
     This function takes in data from an initial set of blob filepaths.
@@ -162,7 +162,7 @@ def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, ba
 
 
 def bulk_insert_data(table_name: str, data: list[dict[str, Any]],
-                     conn=None, max_batch=500) -> None:
+                     conn=None, max_batch: int = 1000) -> None:
     """
     Inserts data into the table with the corresponding table_name.
 
@@ -170,7 +170,8 @@ def bulk_insert_data(table_name: str, data: list[dict[str, Any]],
         table_name (str): The name of the table in the database that the data should be inserted into.
         data (dict/list<dict>): A single dict or list of dicts. Each key represents a column in the table and each value is a value to be inserted.
         conn (object): the pymssql connection object.
-
+        max_batch (int): the max number of rows that can be inserted at once.
+            Default is 1000, the max possible value for Pymssql execute
     Returns:
         id (int, list<int>): id's of inserted data.
     """
