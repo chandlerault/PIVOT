@@ -104,9 +104,9 @@ def generate_random_evaluation_set(test_size: int = 100000,
                     continue
                 # Re-emit other warnings
                 warnings.warn(warning.message, category=warning.category, stacklevel=1)
-    if df:
-        warnings.warn(f"Here are the results (expected none):\n{df}", stacklevel=2)
-
+    if df is not None:
+        warnings.warn(f"Here are the results (expected none):\n{df.head()}", stacklevel=2)
+        return df
     return
 
 
@@ -352,7 +352,7 @@ def execute_stored_procedure(sp: str,
                              server_args: Optional[Dict[str, str]] = {}) -> Union[pd.DataFrame, None]:
     """
     Execute a stored procedure and return the result as a Pandas DataFrame if there is any.
-
+    NOTE: Callproc() truncates arguments greater than 8000 bytes!
     Parameters:
         sp (str): The name of the stored procedure to execute.
         args (dict, optional): A dictionary containing parameters for the stored procedure.
@@ -365,9 +365,18 @@ def execute_stored_procedure(sp: str,
         pd.DataFrame: The result of the stored procedure in a Pandas DataFrame format
                       or None if the stored procedure didn't return any results.
     """
+    use_argument_workaround = False
     # Validate args dictionary
     if args is not None:
         validate_args(sp_name=sp, args=args)
+        # Check if any argument is >=8000 (max length of callproc arguments).
+        for arg_k in args.keys():
+            arg_v = args[arg_k]
+            if isinstance(arg_v, str):
+                if len(arg_v) >= 8000:
+                    use_argument_workaround = True
+                    print(f"Using argument workaround with execute because {arg_k} has length {len(arg_v)}.")
+                    break
     # Get authentication strings
     server, database, user, password = get_server_arguments(server_args=server_args)
     results = None
@@ -375,10 +384,16 @@ def execute_stored_procedure(sp: str,
     with pymssql.connect(server, user, password, database) as conn:
         # set up a cursor object
         with conn.cursor() as cursor:
-            # gather variables for the stored procedure
-            arg_tuples = tuple([args[k] for k in list(args.keys())])
-            # execute stored procedure
-            cursor.callproc(sp, arg_tuples)
+            if use_argument_workaround:
+                # construct dynamic query locally
+                query = f"EXECUTE {sp} " + generate_arg_strings(args)
+                cursor.execute(query)
+            else:
+                # gather variables for the stored procedure
+                arg_tuples = tuple([args[k] for k in list(args.keys())])
+                # execute stored procedure
+                cursor.callproc(sp, arg_tuples)
+
             # Fetch the results
             try:
                 results = cursor.fetchall()
@@ -514,4 +529,31 @@ def run_sql_query(query: str, server_args: Optional[Dict[str, str]] = {}) -> Uni
     df = pd.DataFrame(results, columns=columns)
 
     return df
+
+
+def generate_arg_strings(arg_dict: OrderedDict[str,Any]) -> str:
+    """
+    Generates a string representation of arguments suitable for SQL queries.
+
+    This function takes a dictionary of arguments (`arg_dict`) and constructs a string
+    containing formatted key-value pairs, where keys are treated as argument names and
+    values are appropriately formatted for SQL queries.
+
+    Parameters:
+        arg_dict (OrderedDict[str, Any]): A dictionary containing argument names and values.
+    Returns:
+        str: A string representation of formatted arguments for SQL queries.
+    """
+    string = ""
+    i = 0
+    for arg in arg_dict:
+        if i != 0:
+            string += ", "
+        arg_val = arg_dict[arg]
+        if isinstance(arg_val, str):
+            string += f"@{arg}='{arg_val}'"
+        else:
+            string += f"@{arg}={arg_val}"
+        i += 1
+    return string
   

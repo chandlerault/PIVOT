@@ -206,7 +206,7 @@ def bulk_insert_data(table_name: str, data: list[dict[str, Any]],
         with pymssql.connect(server, user, password, database) as conn:
             with conn.cursor() as cursor:
                 if isinstance(data, list) and len(data) > 0:
-                    for data_chunk in chunks(data):
+                    for data_chunk in tqdm(chunks(data)):
                         insert_query, insert_args = generate_query_args(data_chunk)
                         # Execute the INSERT statement using execute and the flattened tuples
                         cursor.execute(insert_query, insert_args)
@@ -214,7 +214,7 @@ def bulk_insert_data(table_name: str, data: list[dict[str, Any]],
     else:
         with conn.cursor() as cursor:
             if isinstance(data, list) and len(data) > 0:
-                for data_chunk in chunks(data):
+                for data_chunk in tqdm(chunks(data)):
                     insert_query, insert_args = generate_query_args(data_chunk)
                     # Execute the INSERT statement using execute and the flattened tuples
                     cursor.execute(insert_query, insert_args)
