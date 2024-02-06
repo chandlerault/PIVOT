@@ -3,7 +3,7 @@ from PIL import Image
 import numpy as np
 import cv2
 import time
-
+from datetime import datetime
 
 def create_user(user_info):
     """
@@ -83,5 +83,6 @@ def await_connection(max_time=60, step=5):
     return False
 
 def insert_label(df):
+     df['date'] = datetime.now()
      labels = df.to_dict(orient='records')
      data_utils.insert_data('labels', labels) 

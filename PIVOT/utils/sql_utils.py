@@ -12,6 +12,52 @@ from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
 from utils import CONFIG
 
 
+def get_images_to_metrize(model_id: int, dissimilarity_id: int,
+                          server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
+    """
+    Get all new images that need scores calculated for a given model and dissimilarity/uncertainty ID.
+
+    Parameters:
+        model_id (int): The identifier of a specific model used for predictions
+        dissimilarity_id (int): The identifier for the various dissimilarity/uncertainty measures of images.
+        server_args (dict, optional): A dictionary containing connection parameters for the server.
+            Expected keys: 'server', 'database', 'username', 'password'.
+            Default values are taken from the `CONFIG` dictionary.
+    Returns:
+        pd.DataFrame: A DataFrame containing image metadata and model predictions for a given model_id.
+            Columns: IMAGE_ID, PROBS
+    """
+    # Call stored procedure for getting metric data
+    args = OrderedDict([
+        ("MODEL_ID", model_id),
+        ("D_METRIC_ID", dissimilarity_id)
+    ])
+    df = execute_stored_procedure(sp="GENERATE_IMAGES_TO_METRIZE", args=args, server_args=server_args)
+    return df
+
+
+def get_images_to_predict(model_id: int,
+                          server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
+    """
+    Get all new images that need model predictions for a given model_id.
+
+    Parameters:
+        model_id (int): The identifier of a specific model to predict with.
+        server_args (dict, optional): A dictionary containing connection parameters for the server.
+            Expected keys: 'server', 'database', 'username', 'password'.
+            Default values are taken from the `CONFIG` dictionary.
+    Returns:
+        pd.DataFrame: A DataFrame containing image metadata.
+            Columns: IMAGE_ID, BLOB_FILEPATH
+    """
+    # Call stored procedure for getting metric data
+    args = OrderedDict([
+        ("MODEL_ID", model_id)
+    ])
+    df = execute_stored_procedure(sp="GENERATE_IMAGES_TO_PREDICT", args=args, server_args=server_args)
+    return df
+
+
 def generate_random_evaluation_set(test_size: int = 100000,
                                    train_ids: Optional[Sequence[int]] = None,
                                    server_args: Optional[Dict[str, str]] = {}) -> None:
@@ -58,9 +104,9 @@ def generate_random_evaluation_set(test_size: int = 100000,
                     continue
                 # Re-emit other warnings
                 warnings.warn(warning.message, category=warning.category, stacklevel=1)
-    if df:
-        warnings.warn(f"Here are the results (expected none):\n{df}", stacklevel=2)
-
+    if df is not None:
+        warnings.warn(f"Here are the results (expected none):\n{df.head()}", stacklevel=2)
+        return df
     return
 
 
@@ -114,7 +160,7 @@ def get_label_rank_df(model_id: int,
 
     Parameters:
         model_id (int): The identifier of the model.
-        dissimilarity_id (int): The identifier for dissimilarity images.
+        dissimilarity_id (int): The identifier for the various dissimilarity/uncertainty measures of images.
         batch_size (int, optional): The total batch size for label ranking (default is 100).
         relabel_lambda (float, optional): The relabeling lambda parameter (default is 0.069).
         random_ratio (float, optional): The ratio of random images in the batch (default is 0.5).
@@ -190,7 +236,7 @@ def get_train_df(model_id: int,
 
     Parameters:
         model_id (int): The identifier of the model.
-        dissimilarity_id (int): The identifier for dissimilarity images.
+        dissimilarity_id (int): The identifier for the various dissimilarity/uncertainty measures of images.
         all_classes (list): A sorted set of all classes for the model.
         train_size (int, optional): The total train size for finetuning(default is 100).
         train_ids (list): A set of image IDs for images that have already been used for training.
@@ -306,7 +352,7 @@ def execute_stored_procedure(sp: str,
                              server_args: Optional[Dict[str, str]] = {}) -> Union[pd.DataFrame, None]:
     """
     Execute a stored procedure and return the result as a Pandas DataFrame if there is any.
-
+    NOTE: Callproc() truncates arguments greater than 8000 bytes!
     Parameters:
         sp (str): The name of the stored procedure to execute.
         args (dict, optional): A dictionary containing parameters for the stored procedure.
@@ -319,9 +365,18 @@ def execute_stored_procedure(sp: str,
         pd.DataFrame: The result of the stored procedure in a Pandas DataFrame format
                       or None if the stored procedure didn't return any results.
     """
+    use_argument_workaround = False
     # Validate args dictionary
     if args is not None:
         validate_args(sp_name=sp, args=args)
+        # Check if any argument is >=8000 (max length of callproc arguments).
+        for arg_k in args.keys():
+            arg_v = args[arg_k]
+            if isinstance(arg_v, str):
+                if len(arg_v) >= 8000:
+                    use_argument_workaround = True
+                    print(f"Using argument workaround with execute because {arg_k} has length {len(arg_v)}.")
+                    break
     # Get authentication strings
     server, database, user, password = get_server_arguments(server_args=server_args)
     results = None
@@ -329,10 +384,16 @@ def execute_stored_procedure(sp: str,
     with pymssql.connect(server, user, password, database) as conn:
         # set up a cursor object
         with conn.cursor() as cursor:
-            # gather variables for the stored procedure
-            arg_tuples = tuple([args[k] for k in list(args.keys())])
-            # execute stored procedure
-            cursor.callproc(sp, arg_tuples)
+            if use_argument_workaround:
+                # construct dynamic query locally
+                query = f"EXECUTE {sp} " + generate_arg_strings(args)
+                cursor.execute(query)
+            else:
+                # gather variables for the stored procedure
+                arg_tuples = tuple([args[k] for k in list(args.keys())])
+                # execute stored procedure
+                cursor.callproc(sp, arg_tuples)
+
             # Fetch the results
             try:
                 results = cursor.fetchall()
@@ -468,4 +529,31 @@ def run_sql_query(query: str, server_args: Optional[Dict[str, str]] = {}) -> Uni
     df = pd.DataFrame(results, columns=columns)
 
     return df
+
+
+def generate_arg_strings(arg_dict: OrderedDict[str,Any]) -> str:
+    """
+    Generates a string representation of arguments suitable for SQL queries.
+
+    This function takes a dictionary of arguments (`arg_dict`) and constructs a string
+    containing formatted key-value pairs, where keys are treated as argument names and
+    values are appropriately formatted for SQL queries.
+
+    Parameters:
+        arg_dict (OrderedDict[str, Any]): A dictionary containing argument names and values.
+    Returns:
+        str: A string representation of formatted arguments for SQL queries.
+    """
+    string = ""
+    i = 0
+    for arg in arg_dict:
+        if i != 0:
+            string += ", "
+        arg_val = arg_dict[arg]
+        if isinstance(arg_val, str):
+            string += f"@{arg}='{arg_val}'"
+        else:
+            string += f"@{arg}={arg_val}"
+        i += 1
+    return string
   

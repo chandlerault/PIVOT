@@ -30,6 +30,10 @@ SP_ARGS_TYPE_MAPPING: Dict[str, Optional[OrderedDict[str, Any]]] = {
     ]),
     "GENERATE_IMAGES_TO_PREDICT": OrderedDict([
         ('MODEL_ID', int)
+    ]),
+    "GENERATE_IMAGES_TO_METRIZE": OrderedDict([
+        ('MODEL_ID', int),
+        ('D_METRIC_ID', int),
     ])
 }
 
@@ -40,6 +44,7 @@ SP_FILE_NAMES: Dict[str, str] = {
     "MODEL_EVALUATION_MAX_CONSENSUS_FILTERING": "./stored_procedures/Model_Evaluation_Filtering.sql",
     "AL_TRAIN_SET": "./stored_procedures/Model_Training.sql",
     "GENERATE_RANDOM_TEST_SET": "./stored_procedures/Generate_Random_Test_Set.sql",
-    "GENERATE_IMAGES_TO_PREDICT": "./stored_procedures/Image_To_Predict.sql"
+    "GENERATE_IMAGES_TO_PREDICT": "./stored_procedures/Image_To_Predict.sql",
+    "GENERATE_IMAGES_TO_METRIZE": "./stored_procedures/Image_To_Metrize.sql"
 }
 
