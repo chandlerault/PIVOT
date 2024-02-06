@@ -89,12 +89,12 @@ jobs:
       # Next step: run pylint. Anything less than 10/10 will fail.
       - name: Lint with pylint
         run: |
-          pylint pivot/**/*.py
+          pylint PIVOT/**/*.py
 
       # Next step: run the unit tests with code coverage.
       - name: Unit tests
         run: |
-          cd pivot
+          cd PIVOT
           coverage run -m unittest discover
           coverage report
           coverage lcov
