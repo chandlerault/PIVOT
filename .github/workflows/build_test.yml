@@ -11,12 +11,12 @@ name: build_test
 on:
   push:
     branches:
-      - main
+      - chandlerault_qa
   pull_request:
     # Configuring this means that your PRs will get a GitHub comment
     # from Coveralls with your coverage.
     branches:
-      - main
+      - chandlerault_qa
 
 # A list of jobs to run as part of the workflow
 jobs:
