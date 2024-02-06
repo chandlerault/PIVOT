@@ -1,11 +1,13 @@
 """
+This isn't being used at all and I will probably delete. 
+
+Only needed in the case of batch deployment.
 Contains the logic about how to run the model and 
 read the input data submitted by the batch deployment executor.
 Each model deployment has a scoring script
 (and any other required dependencies).
 
 Used as the inference file in Dockerfile and as scoring file during deployment. 
-This is needed for batch deployment.
 """
 from azureml.core.model import Model
 import mlflow
