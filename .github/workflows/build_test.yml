@@ -100,35 +100,35 @@ jobs:
           coverage lcov
 
       # Lastly: report code coverage to Coveralls.
-      - name: Report code coverage to Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          base-path: pivot
-          path-to-lcov: pivot/coverage.lcov
-          # The following two options are needed for "parallel"
-          # runs - ie if you have a matrix of python versions.
-          # This holds off on reporting code coverage to
-          # coveralls until all runs are done. If you don't have
-          # a matrix, this isn't needed.
-          flag-name: run ${{ join(matrix.*, ' - ') }}
-          parallel: true
+      # - name: Report code coverage to Coveralls
+      #   uses: coverallsapp/github-action@master
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     base-path: pivot
+      #     path-to-lcov: pivot/coverage.lcov
+      #     # The following two options are needed for "parallel"
+      #     # runs - ie if you have a matrix of python versions.
+      #     # This holds off on reporting code coverage to
+      #     # coveralls until all runs are done. If you don't have
+      #     # a matrix, this isn't needed.
+      #     flag-name: run ${{ join(matrix.*, ' - ') }}
+      #     parallel: true
 
   # After all the parallel matrix runs for build_test are done
   # for the various python versions, we run this job to send the
   # final code coverage to Coveralls.
-  finish:
-    # This job requires that build_test be finished before it
-    # can run.
-    needs: build_ubuntu
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          parallel-finished: true
-          # This says finish the parallel runs that we did above
-          # and send to Coveralls.
-          carryforward: "run-3.9,run-3.10"
+  # finish:
+  #   # This job requires that build_test be finished before it
+  #   # can run.
+  #   needs: build_ubuntu
+  #   if: ${{ always() }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Coveralls Finished
+  #       uses: coverallsapp/github-action@master
+  #       with:
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         parallel-finished: true
+  #         # This says finish the parallel runs that we did above
+  #         # and send to Coveralls.
+  #         carryforward: "run-3.9,run-3.10"
