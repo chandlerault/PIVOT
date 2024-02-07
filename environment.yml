@@ -18,13 +18,10 @@ dependencies:
       - tqdm
       - pylint
       - modAL
-      #     - libact # requires Python 3.5 so we'll need to make another environment.
       - azure-storage-blob
-      #     - azure-mgmt-core # don't need to manually install as it comes with others
-      #     - azure-core  # same as azure-mgmt-core
       - azure-mgmt-compute
       - azure-identity
       - azure-mgmt-storage
-      # - opencv-python
+      - opencv-python
       - streamlit_option_menu
       - pymssql>=2.2
