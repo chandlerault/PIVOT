@@ -219,18 +219,17 @@ def main():
                     label_id = label_df.iloc[count]['IMAGE_ID']
                     st.write('Image ID: ', label_id)
 
+                    label_probs = label_df.iloc[count]['PROBS']
+                    label_probs = pd.DataFrame.from_dict(label_probs, orient='index')
+                    column_name = label_probs.columns[0]
+                    label_probs = label_probs.rename(columns={column_name: "PROBS"})
+                    label_probs = label_probs.sort_values(by='PROBS', ascending=False)
+                    label_probs_options = label_probs.index.values.tolist()
+
                     user_label = st.selectbox(label="Select the correct phytoplankton subcategory:",
                                             key=widget_selectbox,
-                                            options = ['Cilliate',
-                                                        'Chloro',
-                                                        'Crypto',
-                                                        'Diatom',
-                                                        'Dictyo',
-                                                        'Dinoflagellate',
-                                                        'Eugleno',
-                                                        'Prymnesio',
-                                                        'Other',
-                                                        'Not phytoplanton'])
+                                            options = label_probs_options)
+
                     user_add = st.checkbox(label='Confirm label',
                                         key=widget_checkbox,
                                         value=False)
@@ -255,4 +254,5 @@ def main():
                         unsafe_allow_html=True)
     else:
         st.error("No images match the specification.")
+
 
