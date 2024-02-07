@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - chandlerault_qa
+      - chandler_data
   pull_request:
     # Configuring this means that your PRs will get a GitHub comment
     # from Coveralls with your coverage.
