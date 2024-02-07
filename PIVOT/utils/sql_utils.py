@@ -585,7 +585,7 @@ def get_class_map(model_id: int) -> dict:
     return class_map
 
 
-def map_probs_column(model_id: int, prob_col: pd.Series[str]) -> pd.Series[dict]:
+def map_probs_column(model_id: int, prob_col: pd.Series) -> pd.Series:
     """
     Maps the probability column in a dataframe from the string output of SQL to dicts
     with keys as the true class labels instead of the numeric placeholders.

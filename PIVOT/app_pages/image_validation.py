@@ -203,57 +203,56 @@ def main():
     
     new_df = pd.DataFrame(columns=['i_id', 'u_id', 'weight', 'label'])
 
-    if not label_df.empty:
-        with st.form('image_validation_form', clear_on_submit=False):
-            for count in range(0, len(label_df)):
-                widget_selectbox = 'plankton_select_' + str(count)
-                widget_checkbox = 'plankton_check_' + str(count)
+    if label_df is not None:
+        if not label_df.empty:
+            with st.form('image_validation_form', clear_on_submit=False):
+                for count in range(0, len(label_df)):
+                    widget_selectbox = 'plankton_select_' + str(count)
+                    widget_checkbox = 'plankton_check_' + str(count)
 
-                label_image = app_utils.get_image(label_df.iloc[count]['BLOB_FILEPATH'])
-                st.image(label_image)
+                    label_image = app_utils.get_image(label_df.iloc[count]['BLOB_FILEPATH'])
+                    st.image(label_image)
 
-                label_pred = label_df.iloc[count]['PRED_LABEL']
-                st.write('ML Generated Label: ', label_pred)
+                    label_pred = label_df.iloc[count]['PRED_LABEL']
+                    st.write('ML Generated Label: ', label_pred)
 
-                label_id = label_df.iloc[count]['IMAGE_ID']
-                st.write('Image ID: ', label_id)
+                    label_id = label_df.iloc[count]['IMAGE_ID']
+                    st.write('Image ID: ', label_id)
 
-                user_label = st.selectbox(label="Select the correct phytoplankton subcategory:",
-                                          key=widget_selectbox,
-                                          options = ['Cilliate',
-                                                    'Chloro',
-                                                    'Crypto',
-                                                    'Diatom',
-                                                    'Dictyo',
-                                                    'Dinoflagellate',
-                                                    'Eugleno',
-                                                    'Prymnesio',
-                                                    'Other',
-                                                    'Not phytoplanton'])
-                user_add = st.checkbox(label='Confirm label',
-                                       key=widget_checkbox,
-                                       value=False)
-                if user_add and not user_account:
-                    st.error("Please submit your user information!")
-                elif user_add and user_account:
-                    new_df.loc[count] = [label_df.iloc[count]['IMAGE_ID'],
-                                         user_account['u_id'],
-                                         user_account['experience'],
-                                         user_label]
-        
-                st.divider()
-            submitted = st.form_submit_button("Submit")
-            if submitted and user_account:
-                st.markdown("""<h5 style='text-align: left; color: black;'>
-                    Your responses have been recorded!</h5>""",
-                    unsafe_allow_html=True)
-                app_utils.insert_label(new_df)
-            elif submitted and not user_account:
-                st.markdown("""<h5 style='text-align: left; color: black;'>
-                    Please resubmit once your user information has been recorded.</h5>""",
-                    unsafe_allow_html=True)
+                    label_probs = label_df.iloc[count]['PROBS']
+                    label_probs = pd.DataFrame.from_dict(label_probs, orient='index')
+                    column_name = label_probs.columns[0]
+                    label_probs = label_probs.rename(columns={column_name: "PROBS"})
+                    label_probs = label_probs.sort_values(by='PROBS', ascending=False)
+                    label_probs_options = label_probs.index.values.tolist()
 
-    st.dataframe(new_df)
+                    user_label = st.selectbox(label="Select the correct phytoplankton subcategory:",
+                                            key=widget_selectbox,
+                                            options = label_probs_options)
 
+                    user_add = st.checkbox(label='Confirm label',
+                                        key=widget_checkbox,
+                                        value=False)
+                    if user_add and not user_account:
+                        st.error("Please submit your user information!")
+                    elif user_add and user_account:
+                        new_df.loc[count] = [label_df.iloc[count]['IMAGE_ID'],
+                                            user_account['u_id'],
+                                            user_account['experience'],
+                                            user_label]
+            
+                    st.divider()
+                submitted = st.form_submit_button("Submit")
+                if submitted and user_account:
+                    st.markdown("""<h5 style='text-align: left; color: black;'>
+                        Your responses have been recorded!</h5>""",
+                        unsafe_allow_html=True)
+                    app_utils.insert_label(new_df)
+                elif submitted and not user_account:
+                    st.markdown("""<h5 style='text-align: left; color: black;'>
+                        Please resubmit once your user information has been recorded.</h5>""",
+                        unsafe_allow_html=True)
+    else:
+        st.error("No images match the specification.")
 
 
