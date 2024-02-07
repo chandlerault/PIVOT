@@ -220,13 +220,13 @@ def preprocess_input(image, fixed_size=128):
     image_size = image.shape[:2]
     ratio = float(fixed_size)/max(image_size)
     new_size = tuple([int(x*ratio) for x in image_size]) # pylint: disable=consider-using-generator
-    img = cv2.resize(image, (new_size[1], new_size[0]))
+    img = cv2.resize(image, (new_size[1], new_size[0])) # pylint: disable=no-member
     delta_w = fixed_size - new_size[1]
     delta_h = fixed_size - new_size[0]
     top, bottom = delta_h//2, delta_h-(delta_h//2)
     left, right = delta_w//2, delta_w-(delta_w//2)
     color = [0, 0, 0]
-    ri = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
-    gimg = np.array(ri).reshape(fixed_size,fixed_size,1)
-    img_n = cv2.normalize(gimg, gimg, 0, 255, cv2.NORM_MINMAX)
+    ri = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color) # pylint: disable=no-member
+    gimg = np.array(ri).reshape(fixed_size,fixed_size,1) # pylint: disable=too-many-function-args
+    img_n = cv2.normalize(gimg, gimg, 0, 255, cv2.NORM_MINMAX) # pylint: disable=no-member
     return img_n
