@@ -204,7 +204,11 @@ good-names=i,
            j,
            k,
            df,
-           _
+           _,
+           e,
+           ri,
+           de,
+           ie
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
