@@ -63,6 +63,7 @@ def get_blob_bytes(blob_path):
         pass
     else:
         print(f"Blob '{blob_path}' does not exist in the container.")
+        return None
 
     blob_data = blob_client.download_blob()
     content = blob_data.readall()
