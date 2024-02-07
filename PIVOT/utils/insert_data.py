@@ -1,15 +1,15 @@
-import os
-from tqdm.auto import tqdm, trange
-from typing import Optional, Dict, Any, Tuple, Union
-import warnings
-from collections import OrderedDict
-from collections.abc import Sequence
-import pandas as pd
-import numpy as np
+"""
+This module provides functions for ingesting initial data from blob filepaths into a database.
+It includes a function to ingest data from blob filepaths, check if the paths exist, and insert them into the IMAGES table in the database.
 
-# import constants
+Functions:
+    - initial_ingestion: Ingest data from blob filepaths into the IMAGES table, checking for existence and inserting into the database.
+    - bulk_insert_data: Insert data into a specified table in the database, in batches if necessary.
+"""
+from tqdm.auto import tqdm, trange
+from typing import Any, Tuple, Union
+import pandas as pd
 from utils import CONFIG
-import utils.data_utils as du
 
 from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 import concurrent.futures
@@ -168,7 +168,8 @@ def bulk_insert_data(table_name: str, data: list[dict[str, Any]],
 
     Args:
         table_name (str): The name of the table in the database that the data should be inserted into.
-        data (dict/list<dict>): A single dict or list of dicts. Each key represents a column in the table and each value is a value to be inserted.
+        data (dict/list<dict>): A single dict or list of dicts.
+            Each key represents a column in the table and each value is a value to be inserted.
         conn (object): the pymssql connection object.
         max_batch (int): the max number of rows that can be inserted at once.
             Default is 1000, the max possible value for Pymssql execute

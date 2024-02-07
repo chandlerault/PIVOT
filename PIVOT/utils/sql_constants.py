@@ -1,3 +1,14 @@
+"""
+This module contains constants related to arguments used in stored procedures.
+
+SP_ARGS_TYPE_MAPPING: Contains argument types for various stored procedures.
+    Each key represents the name of a stored procedure, and the corresponding value
+    is an OrderedDict where keys are argument names and values are the types of those arguments.
+
+SP_FILE_NAMES: Contains file paths for SQL files corresponding to stored procedures.
+    Each key represents the name of a stored procedure, and the corresponding value
+    is the file path where the SQL code for that stored procedure is stored.
+"""
 from collections import OrderedDict
 from typing import Dict, Any, Optional
 
@@ -44,7 +55,6 @@ SP_FILE_NAMES: Dict[str, str] = {
     "MODEL_EVALUATION_MAX_CONSENSUS_FILTERING": "./stored_procedures/Model_Evaluation_Filtering.sql",
     "AL_TRAIN_SET": "./stored_procedures/Model_Training.sql",
     "GENERATE_RANDOM_TEST_SET": "./stored_procedures/Generate_Random_Test_Set.sql",
-    "GENERATE_IMAGES_TO_PREDICT": "./stored_procedures/Image_To_Predict.sql",
-    "GENERATE_IMAGES_TO_METRIZE": "./stored_procedures/Image_To_Metrize.sql"
+    "GENERATE_IMAGES_TO_PREDICT": "./stored_procedures/Images_To_Predict.sql",
+    "GENERATE_IMAGES_TO_METRIZE": "./stored_procedures/Images_To_Metrize.sql"
 }
-

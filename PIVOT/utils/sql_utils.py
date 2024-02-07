@@ -1,4 +1,29 @@
+"""
+This module provides utility functions for interacting with stored procedures in a SQL database.
+It includes functions to execute stored procedures, run SQL queries, create or alter stored procedures,
+and load SQL scripts from files.
+It also provides functions to validate arguments for stored procedures, generate argument strings for SQL queries,
+and map probability columns in DataFrames from string representations to dictionaries with full-form class labels.
+
+Functions:
+    - get_images_to_metrize: Get new images for metric calculation based on model and dissimilarity ID.
+    - get_images_to_predict: Get new images for model predictions based on model ID.
+    - generate_random_evaluation_set: Generate a random evaluation set for model testing.
+    - get_test_set_df: Get labeled test data and predictions for model evaluation.
+    - get_label_rank_df: Get label rankings based on model and dissimilarity ID.
+    - get_train_df: Get a DataFrame for model training based on model, dissimilarity ID, and class labels.
+    - validate_args: Validate arguments for a stored procedure against specified types.
+    - get_server_arguments: Get server connection parameters for secure connection.
+    - execute_stored_procedure: Execute a stored procedure and return the result as a Pandas DataFrame.
+    - load_file_from_sql: Load SQL script from file path and return as string.
+    - create_alter_stored_procedure: Create or alter a stored procedure in the database.
+    - run_sql_query: Execute a SQL query on a database and return results as a Pandas DataFrame.
+    - generate_arg_strings: Generate a string representation of arguments suitable for SQL queries.
+    - get_class_map: Get class label mappings from the Models table based on model ID.
+    - map_probs_column: Map probability column from SQL string representation to dictionaries with full-form class labels.
+"""
 import os
+import ast
 from typing import Optional, Dict, Any, Tuple, Union
 import warnings
 from collections import OrderedDict
@@ -33,6 +58,10 @@ def get_images_to_metrize(model_id: int, dissimilarity_id: int,
         ("D_METRIC_ID", dissimilarity_id)
     ])
     df = execute_stored_procedure(sp="GENERATE_IMAGES_TO_METRIZE", args=args, server_args=server_args)
+
+    # Convert PROBS from strings to dict with full-form class_labels
+    df['PROBS'] = map_probs_column(model_id=model_id, prob_col=df['PROBS'])
+
     return df
 
 
@@ -78,10 +107,10 @@ def generate_random_evaluation_set(test_size: int = 100000,
     # Check types of train_ids
     if train_ids is None:
         train_ids = [-1]
-    if not(isinstance(train_ids, Sequence)):
+    if not isinstance(train_ids, Sequence):
         raise ValueError("The train_ids must be a list or other iterable.")
     for i in train_ids:
-        if not(isinstance(i, int)):
+        if not isinstance(i, int):
             raise ValueError("All elements in train_ids must be integers.")
     # Convert list into string
     train_ids = ','.join(str(i) for i in train_ids)
@@ -221,6 +250,9 @@ def get_label_rank_df(model_id: int,
     # Concatenate the results into a single DataFrame (may have duplicates)
     full_df = pd.concat([d_df, r_df])
 
+    # Convert PROBS from strings to dict with full-form class_labels
+    full_df['PROBS'] = map_probs_column(model_id=model_id, prob_col=full_df['PROBS'])
+
     return full_df
 
 
@@ -248,6 +280,7 @@ def get_train_df(model_id: int,
         pd.DataFrame: A DataFrame containing image metadata ranked by dissimilarity and label count.
             Columns: IMAGE_ID, BLOB_FILEPATH, ALL_LABELS, LABEL_PERCENTS, UNCERTAINTY
     """
+
     def generate_class_vectors(row: pd.Series, all_classes: list) -> list:
         """
         Apply the function to create the 'ClassVectors' column:
@@ -272,10 +305,10 @@ def get_train_df(model_id: int,
     # Check types of train_ids
     if train_ids is None:
         train_ids = [-1]
-    if not (isinstance(train_ids, Sequence)):
+    if not isinstance(train_ids, Sequence):
         raise ValueError("The train_ids must be a list or other iterable.")
     for i in train_ids:
-        if not (isinstance(i, int)):
+        if not isinstance(i, int):
             raise ValueError("All elements in train_ids must be integers.")
     # Convert list into string
     train_ids = ','.join(str(i) for i in train_ids)
@@ -375,7 +408,7 @@ def execute_stored_procedure(sp: str,
             if isinstance(arg_v, str):
                 if len(arg_v) >= 8000:
                     use_argument_workaround = True
-                    print(f"Using argument workaround with execute because {arg_k} has length {len(arg_v)}.")
+                    warnings.warn(f"Using argument workaround with execute because {arg_k} has length {len(arg_v)}.")
                     break
     # Get authentication strings
     server, database, user, password = get_server_arguments(server_args=server_args)
@@ -522,7 +555,7 @@ def run_sql_query(query: str, server_args: Optional[Dict[str, str]] = {}) -> Uni
 
     # Check that results isn't empty.
     if not results:
-        warnings.warn(f"The query returned empty.",
+        warnings.warn("The query returned empty.",
                       stacklevel=2)
         return None
     # Fetch the results into a Pandas DataFrame
@@ -531,7 +564,7 @@ def run_sql_query(query: str, server_args: Optional[Dict[str, str]] = {}) -> Uni
     return df
 
 
-def generate_arg_strings(arg_dict: OrderedDict[str,Any]) -> str:
+def generate_arg_strings(arg_dict: OrderedDict[str, Any]) -> str:
     """
     Generates a string representation of arguments suitable for SQL queries.
 
@@ -556,4 +589,49 @@ def generate_arg_strings(arg_dict: OrderedDict[str,Any]) -> str:
             string += f"@{arg}={arg_val}"
         i += 1
     return string
-  
+
+
+def get_class_map(model_id: int) -> dict:
+    """
+    Access `class_map` from Models table to map class labels from integers to full form.
+
+    Parameters:
+        model_id: the ID of the model for which to get class labels.
+    Return:
+        dict: a dictionary mapping label ints to their full name.
+    """
+    if not isinstance(model_id, int):
+        raise ValueError(f"Expected int for model_id, received Type {type(model_id)}: {model_id}")
+
+    class_map = run_sql_query(f"SELECT class_map FROM models WHERE m_id = {model_id};")
+    class_map = ast.literal_eval(class_map.class_map[0])
+
+    return class_map
+
+
+def map_probs_column(model_id: int, prob_col: pd.Series) -> pd.Series:
+    """
+    Maps the probability column in a dataframe from the string output of SQL to dicts
+    with keys as the true class labels instead of the numeric placeholders.
+
+    Parameters:
+        model_id (int): model ID for which to get class labels.
+        prob_col (pd.Series): the series to modify
+    """
+    if not isinstance(prob_col, pd.Series):
+        raise ValueError(f"Expected a pandas Series, received Type {type(prob_col)}.")
+    if not isinstance(prob_col.values[0], str):
+        raise ValueError(f"Expected values to be str, received Type {type(prob_col.values[0])}.")
+
+    # get mapper:
+    class_map = get_class_map(model_id=model_id)
+
+    # Define a function to map keys in each dictionary
+    def map_keys(dictionary: dict) -> dict:
+        return {class_map[key]: value for key, value in dictionary.items()}
+
+    # Convert from strings to dict
+    prob_col = prob_col.apply(ast.literal_eval)
+    # Convert to dict with full-form class_labels
+    prob_col = prob_col.apply(map_keys)
+    return prob_col
