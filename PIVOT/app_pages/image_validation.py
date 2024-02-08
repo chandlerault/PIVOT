@@ -170,6 +170,7 @@ def main():
             purpose = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
             session_purpose = st.select_slider(label="For what purpose are the images being labeled?",
                                             options=purpose,
+                                            value=purpose[5],
                                             format_func = {0.0: 'Retraining',
                                                             0.1: '0.1',
                                                             0.2: '0.2',
@@ -205,7 +206,7 @@ def main():
 
     if label_df is not None:
         if not label_df.empty:
-            with st.form('image_validation_form', clear_on_submit=False):
+            with st.form('image_validation_form', clear_on_submit=True):
                 for count in range(0, len(label_df)):
                     widget_selectbox = 'plankton_select_' + str(count)
                     widget_checkbox = 'plankton_check_' + str(count)
@@ -252,7 +253,13 @@ def main():
                     st.markdown("""<h5 style='text-align: left; color: black;'>
                         Please resubmit once your user information has been recorded.</h5>""",
                         unsafe_allow_html=True)
+
+            next_batch = st.button('Next Batch')
+            if next_batch:
+                label_df = sql_utils.get_label_rank_df(model_id=session_model,
+                                                    dissimilarity_id=session_dissim,
+                                                    batch_size=session_number,
+                                                    relabel_lambda=session_lambda,
+                                                    random_ratio=session_purpose)
     else:
         st.error("No images match the specification.")
-
-
