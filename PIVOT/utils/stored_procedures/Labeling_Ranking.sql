@@ -18,13 +18,13 @@ BEGIN
            M.D_VALUE AS UNCERTAINTY,
            P.PRED_LABEL AS PRED_LABEL,
            P.CLASS_PROB AS PROBS,
-           IIF(L.W_COUNT < 10, (M.D_VALUE * EXP(-@RELABEL_LAMBDA * L.W_COUNT)), 0) AS RANK_SCORE
+           IIF(coalesce(L.W_COUNT, 0) < 10, (M.D_VALUE * EXP(-@RELABEL_LAMBDA * coalesce(L.W_COUNT, 0))), 0) AS RANK_SCORE
     FROM METRICS AS M
     INNER JOIN IMAGES AS I
         ON M.I_ID = I.I_ID
     INNER JOIN PREDICTIONS AS P
         ON M.I_ID = P.I_ID AND (M.M_ID = P.M_ID OR M.M_ID = 0) -- allow for test images that have M_ID=0
-    INNER JOIN LABEL_COUNTS AS L
+    LEFT JOIN LABEL_COUNTS AS L
         ON M.I_ID = L.I_ID
     WHERE
           P.M_ID = @MODEL_ID

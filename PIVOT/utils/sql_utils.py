@@ -499,6 +499,7 @@ def create_alter_stored_procedure(sp_name: str, file_path: Optional[str] = None,
     try:
         # Read the SQL script from the file
         sql_script = load_file_from_sql(file_path)
+        print(sql_script)
         # Establish a connection to the database
         with pymssql.connect(server, user, password, database) as conn:
             # Create a cursor
