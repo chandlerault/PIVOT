@@ -242,7 +242,6 @@ def get_label_rank_df(model_id: int,
         # if batch_size is 0, then we expect to return 1 of the dfs
         if batch_size_d != 0:
             warnings.warn("Unexpectedly, there are no results for the uncertainty samples.", stacklevel=2)
-        return r_df
     if r_df is None:
         if batch_size_r != 0:
             warnings.warn("Unexpectedly, there are no results for the random samples.", stacklevel=2)
@@ -499,6 +498,7 @@ def create_alter_stored_procedure(sp_name: str, file_path: Optional[str] = None,
     try:
         # Read the SQL script from the file
         sql_script = load_file_from_sql(file_path)
+        print(sql_script)
         # Establish a connection to the database
         with pymssql.connect(server, user, password, database) as conn:
             # Create a cursor
