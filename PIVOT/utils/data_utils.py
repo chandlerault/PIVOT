@@ -74,12 +74,8 @@ def insert_data(table_name, data):
     """
     try:
         # Define your database connection parameters
-        server = CONFIG['server']
-        database = CONFIG['database']
-        user = CONFIG['db_user']
-        password = CONFIG['db_password']
-
-        with pymssql.connect(server, user, password, database) as conn: # pylint: disable=no-member
+        with pymssql.connect(CONFIG['server'], CONFIG['db_user'],
+                             CONFIG['db_password'], CONFIG['database']) as conn:
             with conn.cursor() as cursor:
                 if isinstance(data, list) and len(data) > 0:
                     # Generate the INSERT statement dynamically based on the dictionary keys

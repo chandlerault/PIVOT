@@ -1,22 +1,23 @@
 """
 This module provides functions for ingesting initial data from blob filepaths into a database.
-It includes a function to ingest data from blob filepaths, check if the paths exist, and insert them into the IMAGES table in the database.
+It includes a function to ingest data from blob filepaths, check if the paths exist, 
+and insert them into the IMAGES table in the database.
 
 Functions:
-    - initial_ingestion: Ingest data from blob filepaths into the IMAGES table, checking for existence and inserting into the database.
+    - initial_ingestion: Ingest data from blob filepaths into the IMAGES table, 
+        checking for existence and inserting into the database.
     - bulk_insert_data: Insert data into a specified table in the database, in batches if necessary.
 """
-from tqdm.auto import tqdm, trange
+import concurrent.futures
 from typing import Any, Tuple, Union
+import pymssql
+from tqdm.auto import tqdm, trange
 import pandas as pd
 from utils import CONFIG
-
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
-import concurrent.futures
-import pymssql
+from azure.storage.blob import BlobServiceClient
 
 
-def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, batch_size: int = 1000,
+def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, batch_size: int = 1000, #pylint: disable=too-many-locals,too-many-branches,too-many-statements
                       return_val_paths: bool = False, **kwargs) -> Union[None, list[str]]:
     """
     This function takes in data from an initial set of blob filepaths.
@@ -72,7 +73,7 @@ def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, ba
 
         # Split URLs into batches
         start_index = 0
-        url_batches = [image_filepaths[i:i + batch_size] for i in range(start_index, len(image_filepaths), batch_size)]
+        url_batches = [image_filepaths[i:i + batch_size] for i in range(start_index, len(image_filepaths), batch_size)] #pylint: disable=line-too-long
 
         # Create an empty list to store whether or not it exists
         # is_exists = []
@@ -107,7 +108,7 @@ def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, ba
 
                         local_exists = []
                         for i,e in enumerate(exist_data):
-                            if not(e):
+                            if not e:
                                 print(f"Following image path doesn't exist:{image_filepaths[url_idxs[i]]}")
                                 continue
                             if return_val_paths:
@@ -119,7 +120,7 @@ def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, ba
                         print(f"Inserting Batch {order_index}:")
                         bulk_insert_data(table_name="IMAGES", data=local_exists, conn=conn)
                         print(f"\tInserted {len(local_exists)} images")
-                    except Exception as e:
+                    except Exception as e: #pylint: disable=broad-exception-caught
                         print(f"Error processing batch {order_index}: {e}")
                     except KeyboardInterrupt:
                         print("Process interrupted by user.")
@@ -186,7 +187,7 @@ def bulk_insert_data(table_name: str, data: list[dict[str, Any]],
         values_placeholder = ', '.join([f'({", ".join(["%s" for _ in row])})' for row in values])
         insert_query = f"INSERT INTO {table_name} ({columns}) VALUES "
         insert_query += values_placeholder
-        flattened_values = tuple([value for row in values for value in row])
+        flattened_values = tuple([value for row in values for value in row]) #pylint: disable=consider-using-generator
 
         return insert_query, flattened_values
 
@@ -204,7 +205,7 @@ def bulk_insert_data(table_name: str, data: list[dict[str, Any]],
         user = CONFIG['db_user']
         password = CONFIG['db_password']
 
-        with pymssql.connect(server, user, password, database) as conn:
+        with pymssql.connect(server, user, password, database) as conn: #pylint: disable=redefined-argument-from-local
             with conn.cursor() as cursor:
                 if isinstance(data, list) and len(data) > 0:
                     for data_chunk in tqdm(chunks(data)):
