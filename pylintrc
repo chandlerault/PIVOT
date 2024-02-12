@@ -87,7 +87,10 @@ disable=raw-checker-failed,
       deprecated-pragma,
       use-symbolic-message-instead,
       dangerous-default-value,
-      no-member
+      no-member,
+      no-name-in-module,
+      useless-return,
+      import-error
 
 
 
@@ -213,7 +216,10 @@ good-names=i,
            ri,
            sp,
            de,
-           ie
+           ie,
+           bb,
+           n,
+           w
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
