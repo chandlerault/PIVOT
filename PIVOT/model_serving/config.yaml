@@ -5,4 +5,4 @@ experiment_name: "adt-pivot"
 api_key: '4B2DTMyhNHgIk3lJtt8MSdBU5QodpCNf'
 
 scoring_uri: "https://{endpoint_name}.westus2.inference.ml.azure.com/score"
-cloud_url: "https://ifcb.blob.core.windows.net/naames/NAAMES_ml/{filepath}"
+cloud_url: "https://ifcb.blob.core.windows.net/naames/{filepath}"

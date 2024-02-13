@@ -1,48 +1,38 @@
 """
-(Still WIP)
-
-Deploying model in Azure Machine Learning (Azure ML). 
+Deploying model in Azure Machine Learning (Azure ML) as real-time endpoint.
 
 Initializing the Azure ML workspace,
-loading pre-trained model,
-registering the model in Azure ML workspace,
-defining the inference configuration (scoring file is score.py) and ACI deployment configuration,
-deploying the model as a web service to ACI.
+loading pre-trained model, registering model in Azure ML workspace,
+defining the inference configuration.
 """
-
-from azureml.core.webservice import AciWebservice, Webservice
 from azureml.core import Workspace, Model
 from azureml.core.model import InferenceConfig
-from keras.models import model_from_json
+from azure.ai.ml.entities import ManagedOnlineEndpoint
 
-def deploy(model_name, scoring_file):
-    # Initialize Azure ML workspace
-    ws = Workspace.from_config()
+# Initialize Azure ML workspace
+workspace = Workspace.from_config()
 
-    # Register model
-    registered_model = Model.register(workspace=ws,
-                                      model_name='basemodel-endpoint',
-                                      model_path='./ml-workflow/model_ckpt/')
+# Register model
+registered_model = Model.register(workspace=workspace,
+                                  model_name='basemodel',
+                                  model_path='./ml-workflow/model_ckpt/')
 
-    # Access registered model
-    registered_model = Model(ws, 'basemodel_endpoint')
+# Get scoring file
+SCORING_FILE = 'score.py'
 
-    # Define inference configuration
-    inference_config = InferenceConfig(entry_script=scoring_file,
-                                       runtime='python',
-                                       conda_file='environment.yml',  
-                                       source_directory='./')
+# Define inference configuration
+inference_config = InferenceConfig(entry_script=SCORING_FILE,
+                                   runtime='python',
+                                   conda_file='environment.yml',
+                                   source_directory='./')
 
-    # Define ACI deployment configuration
-    aci_config = AciWebservice.deploy_configuration(cpu_cores=1, memory_gb=1)
+# Define an endpoint name
+ENDPOINT_NAME = "basemodel-endpoint"
 
-    # Deploy the model to ACI
-    service_name = "myaciservice"
-    service = Model.deploy(workspace=ws,
-                          name=service_name,
-                          models=[registered_model],
-                          inference_config=inference_config,
-                          deployment_config=aci_config,
-                          deployment_target=None)
-
-    service.wait_for_deployment(show_output=True)
+# Define online deployment configuration
+endpoint = ManagedOnlineEndpoint(
+    model = registered_model,
+    name = ENDPOINT_NAME,
+    description="Endpoint for base model",
+    auth_mode="key"
+)
