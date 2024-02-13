@@ -20,7 +20,8 @@ Functions:
     - run_sql_query: Execute a SQL query on a database and return results as a Pandas DataFrame.
     - generate_arg_strings: Generate a string representation of arguments suitable for SQL queries.
     - get_class_map: Get class label mappings from the Models table based on model ID.
-    - map_probs_column: Map probability column from SQL string representation to dictionaries with full-form class labels.
+    - map_probs_column: Map probability column from SQL string representation to 
+        dictionaries with full-form class labels.
 """
 import os
 import ast
@@ -136,7 +137,7 @@ def generate_random_evaluation_set(test_size: int = 100000,
     if df is not None:
         warnings.warn(f"Here are the results (expected none):\n{df.head()}", stacklevel=2)
         return df
-    return
+    return None
 
 
 def get_test_set_df(model_id: int,
@@ -177,7 +178,7 @@ def get_test_set_df(model_id: int,
     return df
 
 
-def get_label_rank_df(model_id: int,
+def get_label_rank_df(model_id: int, #pylint: disable=too-many-arguments
                       dissimilarity_id: int,
                       batch_size: int = 100,
                       relabel_lambda: float = 0.069,
@@ -255,7 +256,7 @@ def get_label_rank_df(model_id: int,
     return full_df
 
 
-def get_train_df(model_id: int,
+def get_train_df(model_id: int, #pylint: disable=too-many-arguments
                  dissimilarity_id: int,
                  all_classes: list[str],
                  train_size: int = 100,
@@ -407,7 +408,7 @@ def execute_stored_procedure(sp: str,
             if isinstance(arg_v, str):
                 if len(arg_v) >= 8000:
                     use_argument_workaround = True
-                    warnings.warn(f"Using argument workaround with execute because {arg_k} has length {len(arg_v)}.")
+                    warnings.warn(f"Using argument workaround with execute because {arg_k} has length {len(arg_v)}.") #pylint: disable=line-too-long
                     break
     # Get authentication strings
     server, database, user, password = get_server_arguments(server_args=server_args)
@@ -422,7 +423,7 @@ def execute_stored_procedure(sp: str,
                 cursor.execute(query)
             else:
                 # gather variables for the stored procedure
-                arg_tuples = tuple([args[k] for k in list(args.keys())])
+                arg_tuples = tuple([args[k] for k in list(args.keys())]) #pylint: disable=consider-using-generator
                 # execute stored procedure
                 cursor.callproc(sp, arg_tuples)
 
@@ -450,7 +451,7 @@ def execute_stored_procedure(sp: str,
 
 def load_file_from_sql(file_path: str) -> str:
     """Loads SQL file from file path and returns string."""
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r') as file: #pylint: disable=unspecified-encoding
         sql_script = file.read()
     assert sql_script is not None, f"{sql_script} is empty"
 
