@@ -1,5 +1,9 @@
-import os
+"""
+This module manages the theme of the application, page navigation sidebar, subpages,
+and provides a example phytoplankton images and references through a dropdown.
 
+"""
+import os
 import streamlit as st
 from streamlit_option_menu import option_menu
 from PIL import Image
@@ -71,16 +75,17 @@ with st.sidebar:
     st.markdown("""<h5 style='text-align: left; color: white;'>
                 Links to relavent GitHub repositories:</h5>""",
                 unsafe_allow_html=True)
-    
+
     URL_STRING_GITHUB = "https://github.com/ifcb-utopia"
     st.markdown(
+        # pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
         f'<a href="{URL_STRING_GITHUB}" style="display: inline-block; width: 100%; padding-top: 5px; padding-bottom: 5px; background-color: #51bfff; font-weight: bold; color: black; text-align: center; border-radius: 4px;">ifcb-utopia \N{ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS}</a>',
         unsafe_allow_html=True)
-    
+
     st.markdown("""<p style='text-align: left; color: white;'>
                 </br>Select to view examples: </p>""",
                 unsafe_allow_html=True)
-    
+
     example_options = ["Chloro",
                        "Cilliate",
                        "Crypto",

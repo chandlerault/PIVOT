@@ -1,9 +1,17 @@
+"""
+Code that executes the contents of the About page
+and is called by the main app.py script.
+
+Functions:
+    - main: Executes the Streamlit formatted HTML when called by app.py.
+"""
 import streamlit as st
-from PIL import Image
-import pandas as pd
 
 def main():
-
+    """
+    Executes the Streamlit formatted HTML displayed on the About subpage.
+    The images shown here describe the purpose and information flow of the project.
+    """
     st.markdown("""
             <h1 style='text-align: center; color: white; background-image: url(https://img.freepik.com/premium-photo/cute-colorful-abstract-background_480962-11756.jpg);
             padding-top: 70px''>
@@ -19,7 +27,7 @@ def main():
     st.write("""Phytoplankton play a key role in supporting all life on Earth. Given the
              quantity and size of phytoplankton cells, there is a need to accuratly and
              efficently quanitfy them to evaluate their impact in the global Carbon Cycle.
-             The current approach of label validation in this field is to manually label 
+             The current approach of label validation in this field is to manually label
              each image. This approach is complex, inefficent, time-consuming, and does not
              track overall perfomance metrics or confidence. A streamlined, efficent, in-
              house approach is needed to validate machine learning (ML) model-labeled images,
@@ -31,15 +39,17 @@ def main():
              Masters of Science in Data Science capstone group to create an interactive
              tool for validating Convolution Neural Network (CNN) classified phytoplankton
              images. This tool allows researchers to confirm and correct CNN-labeled images,
-             while displaying relavent accuracy and other useful statistics.""")
+             while displaying relavent accuracy and other usesful statistics.""")
 
     st.markdown("""<h3 style='text-align: left; color: black;'>
                 Data Pipeline</h3>""",
                 unsafe_allow_html=True)
-    
+
     left_1, middle_1, right_1 = st.columns([2,3,2])
     with middle_1:
-        st.image("images/SYS.png")
+        st.image("images/SYS.svg")
+    with left_1 and right_1:
+        pass
 
     st.markdown("""<h4 style='text-align: center; color: black;'>
                 System Diagram</h4>""",
@@ -56,22 +66,44 @@ def main():
              appropirate Azure subscription and Virtual Machine were metrics are calculated.
              All images outputted by the Image FlowCytobot are accessed from [Azure Blob
              Storage](https://azure.microsoft.com/en-us/products/storage/blobs/?ef_id=_k_CjwKCAiAlJKuBhAdEiwAnZb7lU3UHKC7kxkUA8gz1C1HdeqXUScz1WVwDxDPZGeUlTMrWUpk8isslBoC9H0QAvD_BwE_k_&OCID=AIDcmm5edswduu_SEM__k_CjwKCAiAlJKuBhAdEiwAnZb7lU3UHKC7kxkUA8gz1C1HdeqXUScz1WVwDxDPZGeUlTMrWUpk8isslBoC9H0QAvD_BwE_k_&gad_source=1&gclid=CjwKCAiAlJKuBhAdEiwAnZb7lU3UHKC7kxkUA8gz1C1HdeqXUScz1WVwDxDPZGeUlTMrWUpk8isslBoC9H0QAvD_BwE)
-             . File paths to each image are collected from Blog Storage and saved in the 
+             . File paths to each image are collected from Blog Storage and saved in the
              SQL Database. The model's performance and prediction metrics are calculated
              and served on
              [Azure Machine Learning (ML)](https://azure.microsoft.com/en-us/products/machine-learning)
-             . These metrics are saved to the SQL Database as well. For a full description on
-             the variables saved to the SQL Database, please refer to the GitHub README for
-             this project.""")
+             . These metrics are saved to the SQL Database as well.""")
 
-    st.image("images/ER.png")
+    left_2, middle_2, right_2 = st.columns([1,5,1])
+    with middle_2:
+        st.image("images/IV.svg")
+    with left_2 and right_2:
+        pass
+
+    st.markdown("""<h4 style='text-align: center; color: black;'>
+                Image Validation Flow Diagram</h4>""",
+                unsafe_allow_html=True)
+
+    st.write("""The Image Validation Flow Diagram visualizes the sequence of events when
+             using the image validation tool. Items in blue represent tasks completed by
+             the user through the PIVOT app. These user enteries and outputs are fed either
+             into the SQL Database directly, used in stored procedures, or connect to the
+             Azure ML client. First, a user will input a pretrained data into Azure ML
+             before being able to access the information on the app. They can train a new 
+             models and extract relavent statistics through our data flow, ultimately serving
+             them in Azure ML. Once the desired models are inputed and served, the user will
+             fill out several forms on the app including the Email, Session, and Label forms.
+             The information gathered in these forms feed directly to tables in the SQL
+             Database.""")
+
+    left_3, middle_3, right_3 = st.columns([1,6,1])
+    with middle_3:
+        st.image("images/ER.svg")
+    with left_3 and right_3:
+        pass
 
     st.markdown("""<h4 style='text-align: center; color: black;'>
                 Entity Relationship (ER) Diagram</h4>""",
                 unsafe_allow_html=True)
 
-    st.image("images/IV.png")
-
-    st.markdown("""<h4 style='text-align: center; color: black;'>
-                Image Validation Flow Diagram</h4>""",
-                unsafe_allow_html=True)
+    st.write("""The diagram above visualizes the relationships between all tables in
+             the SQL Database. For a full description of all variables saved to the
+             database, please refer to the GitHub README for this project.""")
