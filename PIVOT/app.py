@@ -12,6 +12,7 @@ from app_pages import image_validation
 from app_pages import dashboard
 from app_pages import resources
 from app_pages import about
+from app_pages import config_file
 
 # Set current working directory to .
 cwd = os.getcwd()
@@ -59,8 +60,9 @@ with st.sidebar:
         options=["Image Validation",
                  "Summary Metrics",
                  "Resources",
-                 "About"],
-        icons=['chevron-right', 'chevron-right', 'chevron-right', 'chevron-right'],
+                 "About",
+                 "Settings"],
+        icons=['chevron-right', 'chevron-right', 'chevron-right', 'chevron-right', 'chevron-right'],
         default_index=0,
         styles={
         "container": {"padding": "0!important", "background-color": "#052e4a"},
@@ -114,3 +116,5 @@ elif selected == "Resources":
     resources.main()
 elif selected == "About":
     about.main()
+elif selected == "Settings":
+    config_file.main()
