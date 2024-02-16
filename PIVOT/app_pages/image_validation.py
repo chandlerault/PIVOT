@@ -51,14 +51,7 @@ def get_user_experience(num_labels, domain):
 
     return exp_level
 
-def main():
-    """
-    Executes the Streamlit formatted HTML displayed on the Image Validation subpage. Users
-    are prompted to fill out several forms used to determine the images they will label. All
-    forms link to the SQL Database using functions from both sql_utils and app_utils from
-    the utils folder.
-    """
-
+def header():
     st.markdown("""
             <h1 style='text-align: center; color: white; background-image: url(https://img.freepik.com/premium-photo/cute-colorful-abstract-background_480962-11756.jpg);
             padding-top: 70px''>
@@ -66,81 +59,90 @@ def main():
             unsafe_allow_html=True)
 
     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
+
+def main():
+    """
+    Executes the Streamlit formatted HTML displayed on the Image Validation subpage. Users
+    are prompted to fill out several forms used to determine the images they will label. All
+    forms link to the SQL Database using functions from both sql_utils and app_utils from
+    the utils folder.
+    """    
+    st.markdown("""<h3 style='text-align: left; color: black;'>
+            User Information</h3>""",
+            unsafe_allow_html=True)
     
-    if os.stat("config/config.yaml").st_size == 0:
-        st.error("No database configuration found. Pslease update the database configuration in the Settings page.")
-    else:
+    user_account = []
 
-        st.markdown("""<h3 style='text-align: left; color: black;'>
-                User Information</h3>""",
+    left_1, right_1 = st.columns(2)
+    with left_1:
+        user_email = st.text_input(label = "Please enter your email:")
+    with right_1:
+        pass
+
+    if user_email != '':
+        user_account = app_utils.get_user(user_email)
+
+        if user_account is None:
+            left_2, right_2 = st.columns(2)
+            with left_2:
+                user_name = st.text_input(label = "Name:")
+            with right_2:
+                user_lab = st.text_input(label = "Lab:")
+
+            left_3, right_3 = st.columns(2)
+            with left_3:
+                user_domain = st.radio(label="Do you have experience in this field?",
+                                    options=['Yes', 'No'],
+                                    index=None)
+            with right_3:
+                user_num_labels = st.radio(
+                    label="Approximately how many images have you labeled?",
+                    options=['None', '25 to 100',
+                            '100 to 500', '500 to 1000',
+                            '1000+'],
+                            index=None)
+                user_experience = get_user_experience(user_num_labels, user_domain)
+
+            new_user = {
+                'email': user_email,
+                'name': user_name,
+                'experience': user_experience,
+                'lab': user_lab
+            }
+
+            user_confirm = st.button(label="Submit", key="user_button")
+
+            if user_confirm:
+                app_utils.create_user(new_user)
+                st.write("User Added!")
+                user_account = app_utils.get_user(user_email)
+        elif user_account is not None:
+            st.markdown("""<h5 style='text-align: left; color: black;'>
+                User Found</h5>""",
                 unsafe_allow_html=True)
-        
-        user_account = []
+            st.write('Name: ' + str(user_account['name']))
+            st.write('Experience: ' + str(user_account['experience']))
+            st.write('Lab: ' + str(user_account['lab']))
+            st.write('Email: ' + str(user_account['email']))
 
-        left_1, right_1 = st.columns(2)
-        with left_1:
-            user_email = st.text_input(label = "Please enter your email:")
-        with right_1:
-            pass
+    st.divider()
 
-        if user_email != '':
-            user_account = app_utils.get_user(user_email)
+    st.markdown("""<h3 style='text-align: left; color: black;'>
+                Session Specifications</h4>""",
+                unsafe_allow_html=True)
 
-            if user_account is None:
-                left_2, right_2 = st.columns(2)
-                with left_2:
-                    user_name = st.text_input(label = "Name:")
-                with right_2:
-                    user_lab = st.text_input(label = "Lab:")
+    label_df = pd.DataFrame()
 
-                left_3, right_3 = st.columns(2)
-                with left_3:
-                    user_domain = st.radio(label="Do you have experience in this field?",
-                                        options=['Yes', 'No'],
-                                        index=None)
-                with right_3:
-                    user_num_labels = st.radio(
-                        label="Approximately how many images have you labeled?",
-                        options=['None', '25 to 100',
-                                '100 to 500', '500 to 1000',
-                                '1000+'],
-                                index=None)
-                    user_experience = get_user_experience(user_num_labels, user_domain)
+    models = app_utils.get_models()
 
-                new_user = {
-                    'email': user_email,
-                    'name': user_name,
-                    'experience': user_experience,
-                    'lab': user_lab
-                }
-
-                user_confirm = st.button(label="Submit", key="user_button")
-
-                if user_confirm:
-                    app_utils.create_user(new_user)
-                    st.write("User Added!")
-                    user_account = app_utils.get_user(user_email)
-
-            elif user_account is not None:
-                st.markdown("""<h5 style='text-align: left; color: black;'>
-                    User Found</h5>""",
-                    unsafe_allow_html=True)
-                st.write('Name: ' + str(user_account['name']))
-                st.write('Experience: ' + str(user_account['experience']))
-                st.write('Lab: ' + str(user_account['lab']))
-                st.write('Email: ' + str(user_account['email']))
-
-        st.divider()
-
-        st.markdown("""<h3 style='text-align: left; color: black;'>
-                    Session Specifications</h4>""",
-                    unsafe_allow_html=True)
-
-        label_df = pd.DataFrame()
-
+    if not models:
+        st.error("""Please ensure database configuration information is correct. If so,
+                 restart app to ensure database configurations has been
+                 saved with the following command.""")
+        st.code("streamlit run app.py", language=None)
+    else:
         left_4, right_4 = st.columns(2)
         with left_4:
-            models = app_utils.get_models()
             model_dic = {}
             model_names = []
 
@@ -296,6 +298,5 @@ def main():
                         st.markdown("""<h5 style='text-align: left; color: black;'>
                         Please resubmit once your user information has been recorded.</h5>""",
                         unsafe_allow_html=True)
-
         else:
-            st.error("No images match the specification.")
+            st.error("""No images match the specification.""")

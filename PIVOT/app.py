@@ -109,7 +109,15 @@ with st.sidebar:
 
 # Run specific app_page scrip when a page is selected from nav sidebar
 if selected == "Image Validation":
-    image_validation.main()
+    if os.stat("config/config.yaml").st_size == 0:
+        image_validation.header()
+        st.error("""No database configuration found. 
+                 Please enter the database configuration infromation 
+                 and restart when finished.""")
+        config_file.main()
+    else:
+        image_validation.header()
+        image_validation.main()
 elif selected == "Summary Metrics":
     dashboard.main()
 elif selected == "Resources":
@@ -117,4 +125,5 @@ elif selected == "Resources":
 elif selected == "About":
     about.main()
 elif selected == "Settings":
+    config_file.header()
     config_file.main()
