@@ -207,13 +207,14 @@ def main():
                 del class_labels[i]
                 count = count + 1
 
-        left_1, right_1 = st.columns(2)
-        with left_1:
+        left_1, middle_1a, middle_1b, middle_1c, right_1 = st.columns([.5,2,.5,2,.5])
+        with middle_1a:
             c_report = get_classification_report(model_pred.true_label,model_pred.pred_label)
             c_report = c_report.drop(['weighted avg','accuracy','macro avg']).sort_index()
             c_report = c_report.assign(class_label=class_labels)
-            prec_rec = plot_precision_recall(class_labels,
-                                    np.arange(len(class_labels)),
+            c_report = c_report.sort_values(by='precision', ascending=False)
+            prec_rec = plot_precision_recall(c_report.class_label,
+                                    np.arange(len(c_report.class_label)),
                                     c_report.precision,
                                     c_report.recall,
                                     0.4)
@@ -226,7 +227,7 @@ def main():
                                         title='Confusion Matrix')
             st.pyplot(cm_fig)
 
-        with right_1:
+        with middle_1c:
             c_report = c_report.sort_values(by=['f1-score'], ascending=False)
             f1_plot = plot_f1_score(c_report['class_label'], c_report['f1-score'])
             st.pyplot(f1_plot)
@@ -288,15 +289,17 @@ def main():
 
                     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
-                    left_3, right_3 = st.columns(2)
-                    with left_3:
+                    left_3, middle_3a, middle_3b, middle_3c, right_3 = st.columns([.5,2,.5,2,.5])
+                    with middle_3a:
                         c_report_test = get_classification_report(validated_df.CONSENSUS,
                                                                 validated_df.PRED_LABEL)
                         c_report_test = c_report_test.drop(['weighted avg','accuracy','macro avg']) \
                             .sort_index()
                         c_report_test = c_report_test.assign(class_label=c_report_test.index)
-                        prec_rec_test = plot_precision_recall(c_report_test.index,
-                                                np.arange(len(c_report_test.index)),
+                        c_report_test = c_report_test.sort_values(by='precision',
+                                                                  ascending=False)
+                        prec_rec_test = plot_precision_recall(c_report_test.class_label,
+                                                np.arange(len(c_report_test.class_label)),
                                                 c_report_test.precision,
                                                 c_report_test.recall,
                                                 0.4)
@@ -309,7 +312,7 @@ def main():
                                                             normalize=True, title='Confusion Matrix')
                         st.pyplot(cm_fig_test)
 
-                    with right_3:
+                    with middle_3c:
                         c_report_test = c_report_test.sort_values(by=['f1-score'], ascending=False)
                         f1_plot_test = plot_f1_score(c_report_test['class_label'],
                                                     c_report_test['f1-score'])

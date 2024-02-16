@@ -183,7 +183,7 @@ def main():
 
         left_5, right_5 = st.columns(2)
         with left_5:
-            session_number = st.number_input(label='What is the preferred image batch size?',
+            session_number = st.number_input(label='What is the prefered image batch size?',
                                     min_value=0,
                                     max_value=200,
                                     value=None,
