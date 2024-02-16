@@ -149,7 +149,7 @@ def main():
                         "Diatom",
                         "Dictyo",
                         "Dinoflagellate",
-                        "Euglena",
+                        "Eugleno",
                         "Unidentifiable",
                         "Prymnesio",
                         "Other"]

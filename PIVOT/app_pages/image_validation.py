@@ -137,7 +137,7 @@ def main():
 
     if not models:
         st.error("""Please ensure database configuration information is correct. If so,
-                 restart app to ensure database configurations has been
+                 restart app to ensure database configurations have been
                  saved with the following command.""")
         st.code("streamlit run app.py", language=None)
     else:
@@ -183,7 +183,7 @@ def main():
 
         left_5, right_5 = st.columns(2)
         with left_5:
-            session_number = st.number_input(label='What is the prefered image batch size?',
+            session_number = st.number_input(label='What is the preferred image batch size?',
                                     min_value=0,
                                     max_value=200,
                                     value=None,
