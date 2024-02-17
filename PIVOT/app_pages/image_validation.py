@@ -136,10 +136,8 @@ def main():
     models = app_utils.get_models()
 
     if not models:
-        st.error("""Please ensure database configuration information is correct. If so,
-                 restart app to ensure database configurations have been
-                 saved with the following command.""")
-        st.code("streamlit run app.py", language=None)
+        st.error("""Please ensure database configuration information is correct
+                and update on the Settings page.""")
     else:
         left_4, right_4 = st.columns(2)
         with left_4:
