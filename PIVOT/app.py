@@ -113,7 +113,7 @@ if selected == "Image Validation":
         image_validation.header()
         st.error("""No database configuration found. 
                  Please enter the database configuration infromation 
-                 and restart when finished.""")
+                 below.""")
         config_file.main()
     else:
         image_validation.header()

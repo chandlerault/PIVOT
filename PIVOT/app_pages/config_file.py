@@ -1,6 +1,8 @@
 import os
 import streamlit as st
 
+from utils import load_config
+
 def header():
 
     st.markdown("""
@@ -13,7 +15,7 @@ def header():
 
 def main():
 
-    with st.form('config_from', clear_on_submit=False, border=False):
+    with st.form('config_from', clear_on_submit=True, border=False):
 
         st.markdown("""<h3 style='text-align: left; color: black;'>
                     Blob Storage</h3>""",
@@ -36,7 +38,17 @@ def main():
             database = st.text_input("Database Name:")
             db_password = st.text_input("Password:")
 
+        st.markdown("""<h1></h1>""", unsafe_allow_html=True)
+
         if os.stat("config/config.yaml").st_size != 0:
+            with st.expander("Current Database Configuration:"):
+                CONFIG = load_config()
+                st.write("*Connection String:*", CONFIG['connection_string'])
+                st.write("*Image Container:*", CONFIG['image_container'])
+                st.write("*Server Name:*", CONFIG['server'])
+                st.write("*Database Name:*", CONFIG['database'])
+                st.write("*Admin Username:*", CONFIG['db_user'])
+                st.write("*Password:*", CONFIG['db_password'])
             st.warning("Warning! By submitting, you will overwrite your database configurations.")
 
         if st.form_submit_button("Submit"):
@@ -47,8 +59,4 @@ def main():
                     f.write("database: " + database + "\n")
                     f.write("db_user: " + db_user + "\n")
                     f.write("db_password: " + db_password + "\n")
-            st.markdown("""<h6 style='text-align: left; color: black;'>
-                        Reload Streamlit by running the following command to 
-                        complete the configuration update.</h6>""",
-                        unsafe_allow_html=True)
-            st.code("streamlit run app.py", language=None)
+            st.rerun()
