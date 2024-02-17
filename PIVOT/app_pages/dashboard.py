@@ -136,7 +136,7 @@ def main():
     st.markdown("""
             <h1 style='text-align: center; color: white; background-image: url(https://img.freepik.com/premium-photo/cute-colorful-abstract-background_480962-11756.jpg);
             padding-top: 70px''>
-            Phytoplankton Image Validation Optimization Toolkit<br><br></h1>""",
+            Summary Metrics<br><br></h1>""",
             unsafe_allow_html=True)
 
     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
@@ -149,7 +149,7 @@ def main():
                         "Diatom",
                         "Dictyo",
                         "Dinoflagellate",
-                        "Euglena",
+                        "Eugleno",
                         "Unidentifiable",
                         "Prymnesio",
                         "Other"]
@@ -207,13 +207,14 @@ def main():
                 del class_labels[i]
                 count = count + 1
 
-        left_1, right_1 = st.columns(2)
-        with left_1:
+        left_1, middle_1a, middle_1b, middle_1c, right_1 = st.columns([.5,2,.5,2,.5])
+        with middle_1a:
             c_report = get_classification_report(model_pred.true_label,model_pred.pred_label)
             c_report = c_report.drop(['weighted avg','accuracy','macro avg']).sort_index()
             c_report = c_report.assign(class_label=class_labels)
-            prec_rec = plot_precision_recall(class_labels,
-                                    np.arange(len(class_labels)),
+            c_report = c_report.sort_values(by='precision', ascending=False)
+            prec_rec = plot_precision_recall(c_report.class_label,
+                                    np.arange(len(c_report.class_label)),
                                     c_report.precision,
                                     c_report.recall,
                                     0.4)
@@ -226,83 +227,93 @@ def main():
                                         title='Confusion Matrix')
             st.pyplot(cm_fig)
 
-        with right_1:
+        with middle_1c:
             c_report = c_report.sort_values(by=['f1-score'], ascending=False)
             f1_plot = plot_f1_score(c_report['class_label'], c_report['f1-score'])
             st.pyplot(f1_plot)
     with tab_2:
         if os.stat("config/config.yaml").st_size == 0:
-            st.error("No database configuration found. Pslease update the database configuration in the Settings page.")
+            st.error("""No database configuration found. Please update the database
+                     configuration in the Settings page.""")
         else:
-            left_2, right_2 = st.columns(2)
-            with left_2:
-                model_list = app_utils.get_models()
-                model_dictionary = {}
-                model_name = []
+            model_list = app_utils.get_models()
+            if not model_list:
+                st.error("""Please ensure database configuration information is correct.
+                         If so, restart app to ensure database configurations has been
+                         saved with the following command.""")
+                st.code("streamlit run app.py", language=None)
+            else:
+                left_2, right_2 = st.columns(2)
+                with left_2:
+                    model_list = app_utils.get_models()
+                    model_dictionary = {}
+                    model_name = []
 
-                for i in range(1,len(model_list)):
-                    model_name.append(model_list[i]['m_id'])
-                    model_dictionary[model_list[i]['m_id']] = model_list[i]['model_name']
+                    for i in range(1,len(model_list)):
+                        model_name.append(model_list[i]['m_id'])
+                        model_dictionary[model_list[i]['m_id']] = model_list[i]['model_name']
 
-                selected_model_sum = st.selectbox(label='Select the model you wish to evaluate:',
-                                            options=tuple(model_name),
-                                            format_func=model_dictionary.__getitem__,
-                                            index=None)
-            with right_2:
-                pass
-
-            st.markdown("""<h1></h1>""", unsafe_allow_html=True)
-
-            validated_df = sql_utils.get_test_set_df(selected_model_sum)
-            if validated_df is not None:
-                validated_df['IS_CORRECT'] = (validated_df['PRED_LABEL'] == \
-                                            validated_df['CONSENSUS']).astype(int)
-
-                val_acc = float(sum(validated_df['IS_CORRECT']))/float(len(validated_df))
-                val_prec = precision_score(validated_df['CONSENSUS'],
-                                            validated_df['PRED_LABEL'],
-                                            average='weighted')
-                val_recall = recall_score(validated_df['CONSENSUS'],
-                                        validated_df['PRED_LABEL'],
-                                        average='weighted')
-                
-                test_acc_diff = val_acc - model_acc
-                test_pre_diff = val_prec - model_prec
-                test_rec_diff = val_recall - model_recall
-                
-                left_4, middle_4, right_4 = st.columns(3)
-                with left_4:
-                    st.metric("Accuracy:", f"{val_acc*100:.2f} %", delta=f"{test_acc_diff*100:.2f} %")
-                with middle_4:
-                    st.metric("Precision:", f"{val_prec*100:.2f} %", delta=f"{test_pre_diff*100:.2f} %")
-                with right_4:
-                    st.metric("Recall:", f"{val_recall*100:.2f} %", delta=f"{test_rec_diff*100:.2f} %")
+                    selected_model_sum = st.selectbox(label='Select the model you wish to evaluate:',
+                                                options=tuple(model_name),
+                                                format_func=model_dictionary.__getitem__,
+                                                index=None)
+                with right_2:
+                    pass
 
                 st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
-                left_3, right_3 = st.columns(2)
-                with left_3:
-                    c_report_test = get_classification_report(validated_df.CONSENSUS,
-                                                            validated_df.PRED_LABEL)
-                    c_report_test = c_report_test.drop(['weighted avg','accuracy','macro avg']) \
-                        .sort_index()
-                    c_report_test = c_report_test.assign(class_label=c_report_test.index)
-                    prec_rec_test = plot_precision_recall(c_report_test.index,
-                                            np.arange(len(c_report_test.index)),
-                                            c_report_test.precision,
-                                            c_report_test.recall,
-                                            0.4)
-                    st.pyplot(prec_rec_test)
+                validated_df = sql_utils.get_test_set_df(selected_model_sum)
+                if validated_df is not None:
+                    validated_df['IS_CORRECT'] = (validated_df['PRED_LABEL'] == \
+                                                validated_df['CONSENSUS']).astype(int)
+
+                    val_acc = float(sum(validated_df['IS_CORRECT']))/float(len(validated_df))
+                    val_prec = precision_score(validated_df['CONSENSUS'],
+                                                validated_df['PRED_LABEL'],
+                                                average='weighted')
+                    val_recall = recall_score(validated_df['CONSENSUS'],
+                                            validated_df['PRED_LABEL'],
+                                            average='weighted')
+                    
+                    test_acc_diff = val_acc - model_acc
+                    test_pre_diff = val_prec - model_prec
+                    test_rec_diff = val_recall - model_recall
+                    
+                    left_4, middle_4, right_4 = st.columns(3)
+                    with left_4:
+                        st.metric("Accuracy:", f"{val_acc*100:.2f} %", delta=f"{test_acc_diff*100:.2f} %")
+                    with middle_4:
+                        st.metric("Precision:", f"{val_prec*100:.2f} %", delta=f"{test_pre_diff*100:.2f} %")
+                    with right_4:
+                        st.metric("Recall:", f"{val_recall*100:.2f} %", delta=f"{test_rec_diff*100:.2f} %")
 
                     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
-                    cm_test = confusion_matrix(validated_df.CONSENSUS, validated_df.PRED_LABEL)
-                    cm_fig_test = plot_confusion_matrix(cm_test, classes=c_report_test.index,
-                                                        normalize=True, title='Confusion Matrix')
-                    st.pyplot(cm_fig_test)
+                    left_3, middle_3a, middle_3b, middle_3c, right_3 = st.columns([.5,2,.5,2,.5])
+                    with middle_3a:
+                        c_report_test = get_classification_report(validated_df.CONSENSUS,
+                                                                validated_df.PRED_LABEL)
+                        c_report_test = c_report_test.drop(['weighted avg','accuracy','macro avg']) \
+                            .sort_index()
+                        c_report_test = c_report_test.assign(class_label=c_report_test.index)
+                        c_report_test = c_report_test.sort_values(by='precision',
+                                                                  ascending=False)
+                        prec_rec_test = plot_precision_recall(c_report_test.class_label,
+                                                np.arange(len(c_report_test.class_label)),
+                                                c_report_test.precision,
+                                                c_report_test.recall,
+                                                0.4)
+                        st.pyplot(prec_rec_test)
 
-                with right_3:
-                    c_report_test = c_report_test.sort_values(by=['f1-score'], ascending=False)
-                    f1_plot_test = plot_f1_score(c_report_test['class_label'],
-                                                c_report_test['f1-score'])
-                    st.pyplot(f1_plot_test)
+                        st.markdown("""<h1></h1>""", unsafe_allow_html=True)
+
+                        cm_test = confusion_matrix(validated_df.CONSENSUS, validated_df.PRED_LABEL)
+                        cm_fig_test = plot_confusion_matrix(cm_test, classes=c_report_test.index,
+                                                            normalize=True, title='Confusion Matrix')
+                        st.pyplot(cm_fig_test)
+
+                    with middle_3c:
+                        c_report_test = c_report_test.sort_values(by=['f1-score'], ascending=False)
+                        f1_plot_test = plot_f1_score(c_report_test['class_label'],
+                                                    c_report_test['f1-score'])
+                        st.pyplot(f1_plot_test)

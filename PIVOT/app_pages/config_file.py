@@ -1,20 +1,22 @@
 import os
 import streamlit as st
 
-def main():
+def header():
 
     st.markdown("""
             <h1 style='text-align: center; color: white; background-image: url(https://img.freepik.com/premium-photo/cute-colorful-abstract-background_480962-11756.jpg);
             padding-top: 70px''>
-            Phytoplankton Image Validation Optimization Toolkit<br><br></h1>""",
+            Settings<br><br></h1>""",
             unsafe_allow_html=True)
 
     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
+def main():
+
     with st.form('config_from', clear_on_submit=False, border=False):
 
         st.markdown("""<h3 style='text-align: left; color: black;'>
-                    Blob Storage Information</h3>""",
+                    Blob Storage</h3>""",
                     unsafe_allow_html=True)
 
         connection_string = st.text_input(label="Connection String:")
@@ -23,7 +25,7 @@ def main():
         st.divider()
 
         st.markdown("""<h3 style='text-align: left; color: black;'>
-                    Database Information</h3>""",
+                    SQL Database</h3>""",
                     unsafe_allow_html=True)
         
         left_2, right_2 = st.columns(2)

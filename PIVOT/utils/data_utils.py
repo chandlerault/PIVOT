@@ -22,6 +22,7 @@ import numpy as np
 import cv2
 from utils import CONFIG # pylint: disable=no-name-in-module
 
+
 def get_blob_bytes(blob_path):
     """
     Retrieve images from Azure Blob Storage based on a filepath. Takes ~0.25s per image.
@@ -118,26 +119,27 @@ def select(table_name, conditions, columns=['*']): # pylint: disable=dangerous-d
             An empty list is returned if there are no results or if an error occurs.
     """
     try:
-        server = CONFIG['server']
-        database = CONFIG['database']
-        user = CONFIG['db_user']
-        password = CONFIG['db_password']
-        with pymssql.connect(server=server, database=database, user=user, password=password) as conn: # pylint: disable=no-member
-            with conn.cursor() as cursor:
-                query = f"SELECT {', '.join(columns)} FROM {table_name}"
+        if CONFIG is not None:
+            server = CONFIG['server']
+            database = CONFIG['database']
+            user = CONFIG['db_user']
+            password = CONFIG['db_password']
+            with pymssql.connect(server=server, database=database, user=user, password=password) as conn: # pylint: disable=no-member
+                with conn.cursor() as cursor:
+                    query = f"SELECT {', '.join(columns)} FROM {table_name}"
 
-                if conditions:
-                    condition_strings = []
-                    for column, value in conditions.items():
-                        condition_strings.append(f"{column} = '{value}'")
-                    where_clause = " WHERE " + " AND ".join(condition_strings)
-                    query += where_clause
+                    if conditions:
+                        condition_strings = []
+                        for column, value in conditions.items():
+                            condition_strings.append(f"{column} = '{value}'")
+                        where_clause = " WHERE " + " AND ".join(condition_strings)
+                        query += where_clause
 
-                cursor.execute(query)
-                rows = cursor.fetchall()
-                column_names = [desc[0] for desc in cursor.description]
-                result = [dict(zip(column_names, row)) for row in rows]
-                return result
+                    cursor.execute(query)
+                    rows = cursor.fetchall()
+                    column_names = [desc[0] for desc in cursor.description]
+                    result = [dict(zip(column_names, row)) for row in rows]
+                    return result
     except pymssql.InterfaceError as ie: # pylint: disable=no-member
         print("InterfaceError:", str(ie))
     except pymssql.DatabaseError as de: # pylint: disable=no-member
@@ -158,19 +160,21 @@ def select_distinct(table_name, columns):
             An empty list is returned if there are no results or if an error occurs.
     """
     try:
-        server = CONFIG['server']
-        database = CONFIG['database']
-        user = CONFIG['db_user']
-        password = CONFIG['db_password']
-        with pymssql.connect(server=server, database=database, user=user, password=password) as conn: # pylint: disable=no-member
-            with conn.cursor() as cursor:
-                query = f"SELECT DISTINCT {', '.join(columns)} FROM {table_name}"
-                cursor.execute(query)
-                rows = cursor.fetchall()
-                column_names = [desc[0] for desc in cursor.description]
-                result = [dict(zip(column_names, row)) for row in rows]
-                return result
-
+        if CONFIG is not None:
+            server = CONFIG['server']
+            database = CONFIG['database']
+            user = CONFIG['db_user']
+            password = CONFIG['db_password']
+            with pymssql.connect(server=server, database=database, user=user, password=password) as conn: # pylint: disable=no-member
+                with conn.cursor() as cursor:
+                    query = f"SELECT DISTINCT {', '.join(columns)} FROM {table_name}"
+                    cursor.execute(query)
+                    rows = cursor.fetchall()
+                    column_names = [desc[0] for desc in cursor.description]
+                    result = [dict(zip(column_names, row)) for row in rows]
+                    return result
+        else:
+            pass
     except pymssql.InterfaceError as ie: # pylint: disable=no-member
         print("InterfaceError:", str(ie))
     except pymssql.DatabaseError as de: # pylint: disable=no-member
