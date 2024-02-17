@@ -13,7 +13,9 @@ from typing import Any, Tuple, Union
 import pymssql
 from tqdm.auto import tqdm, trange
 import pandas as pd
-from utils import CONFIG
+
+from utils import load_config
+from utils.sql_utils import get_server_arguments
 from azure.storage.blob import BlobServiceClient
 
 
@@ -39,10 +41,7 @@ def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, ba
     """
 
     # Gather database connection parameters:
-    server = CONFIG['server']
-    database = CONFIG['database']
-    user = CONFIG['db_user']
-    password = CONFIG['db_password']
+    server, database, user, password = get_server_arguments()
 
     # get database connection:
     conn = pymssql.connect(server, user, password, database)
@@ -61,6 +60,7 @@ def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, ba
         print(f"Got all image paths from {csv_path}.")
     # check whether path exists
     verified_paths = []
+    CONFIG = load_config()
     connection_string = CONFIG['connection_string']
     container_name = CONFIG['image_container']
 
@@ -200,10 +200,7 @@ def bulk_insert_data(table_name: str, data: list[dict[str, Any]],
 
     if conn is None:
         # Define your database connection parameters
-        server = CONFIG['server']
-        database = CONFIG['database']
-        user = CONFIG['db_user']
-        password = CONFIG['db_password']
+        server, database, user, password = get_server_arguments()
 
         with pymssql.connect(server, user, password, database) as conn: #pylint: disable=redefined-argument-from-local
             with conn.cursor() as cursor:

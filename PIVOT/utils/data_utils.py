@@ -20,7 +20,7 @@ import pymssql
 from azure.storage.blob import BlobServiceClient
 import numpy as np
 import cv2
-from utils import CONFIG # pylint: disable=no-name-in-module
+from utils import load_config
 
 
 def get_blob_bytes(blob_path):
@@ -38,6 +38,7 @@ def get_blob_bytes(blob_path):
         if not isinstance(blob_path, str):
             raise TypeError("filepath must be a string")
 
+        CONFIG = load_config()
         connection_string = CONFIG['connection_string']
         container_name = CONFIG['image_container']
 
@@ -73,6 +74,7 @@ def insert_data(table_name, data):
     Returns:
         id (int, list<int>): id's of inserted data.
     """
+    CONFIG = load_config()
     try:
         # Define your database connection parameters
         with pymssql.connect(CONFIG['server'], CONFIG['db_user'],
@@ -118,6 +120,7 @@ def select(table_name, conditions, columns=['*']): # pylint: disable=dangerous-d
             Keys of each dictionary are column names and values are the corresponding values in the row.
             An empty list is returned if there are no results or if an error occurs.
     """
+    CONFIG = load_config()
     try:
         if CONFIG is not None:
             server = CONFIG['server']
@@ -159,6 +162,7 @@ def select_distinct(table_name, columns):
             Keys of each dictionary are column names and values are the corresponding values in the row.
             An empty list is returned if there are no results or if an error occurs.
     """
+    CONFIG = load_config()
     try:
         if CONFIG is not None:
             server = CONFIG['server']
@@ -188,6 +192,7 @@ def get_status():
     Returns:
         bool: True if the database is online, False otherwise.
     """
+    CONFIG = load_config()
     try:
         server = CONFIG['server']
         database = CONFIG['database']

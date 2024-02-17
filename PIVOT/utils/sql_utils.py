@@ -35,7 +35,7 @@ import pymssql
 
 # import constants
 from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
-from utils import CONFIG
+from utils import load_config
 
 
 def get_images_to_metrize(model_id: int, dissimilarity_id: int,
@@ -372,6 +372,7 @@ def get_server_arguments(server_args: Optional[Dict[str, str]] = {}) -> Tuple[st
         Tuple: a tuple containing the strings for server, database, username, and password
     """
     # if new parameters are passed, load from dict or use config file
+    CONFIG = load_config()
     server = server_args.get('server', CONFIG['server'])
     database = server_args.get('database', CONFIG['database'])
     user = server_args.get('username', CONFIG['db_user'])
