@@ -88,6 +88,7 @@ with st.sidebar:
                 </br>Select to view examples: </p>""",
                 unsafe_allow_html=True)
 
+    # Set a list of phytoplankton to provide example images
     example_options = ["Chloro",
                        "Cilliate",
                        "Crypto",
@@ -95,10 +96,11 @@ with st.sidebar:
                        "Dictyo",
                        "Dinoflagellate",
                        "Eugleno",
-                       "Unidentified",
+                       "Unidentifiable",
                        "Prymnesio",
-                       "Not Phytoplankton"]
+                       "Other"]
 
+    # Display example images based on user selected phytoplankton
     example_image = st.selectbox(options=example_options,
                                 label_visibility ='collapsed',
                                 label='examples',
@@ -111,8 +113,8 @@ with st.sidebar:
 if selected == "Image Validation":
     if os.stat("config/config.yaml").st_size == 0:
         image_validation.header()
-        st.error("""No database configuration found. 
-                 Please enter the database configuration infromation 
+        st.error("""No database configuration found.
+                 Please enter the database configuration information
                  below.""")
         config_file.main()
     else:
