@@ -2,8 +2,7 @@ CREATE TABLE models (
     m_id int IDENTITY(1,1) PRIMARY KEY,
     model_name VARCHAR(255) NOT NULL,
     model_link VARCHAR(MAX),
-    structure VARCHAR(MAX),
-    weights VARCHAR(MAX)
+    class_map VARCHAR(MAX) NOT NULL
 );
 
 CREATE TABLE images (
