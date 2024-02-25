@@ -113,7 +113,7 @@ conda env create -f environment.yml
 
 Once the Conda environment is created, it can be activated by:
 ```bash
-conda activate pivot
+conda activate pivot-modAL
 ```
 After coding inside the environment, it can be deactivated with the command:
 ```bash
