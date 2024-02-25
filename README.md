@@ -106,7 +106,7 @@ Please note that Git is required to run the above command. For instructions on d
 ### Environment
 This application is built on top of multiple Python packages with specific version requirements. Installing these packages can cause conflicts with other packages in the workspace. As a work-around, we recommend to use `conda` to create an isolated Python environment with all necessary packages. Specifically, the list of necessary packages can be found at in the [`environment.yml`](./environment.yml) file.
 
-To create our specified `pivot` Conda environment, run the following command:
+To create our specified `pivot-modAL` Conda environment, run the following command:
 ```bash
 conda env create -f environment.yml
 ```
