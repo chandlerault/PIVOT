@@ -126,4 +126,4 @@ def insert_label(df):
     for label_weight in label_weights:
         subset = df.query(f'weight == {label_weight}')
         i_id_list = list(subset['i_id'].values)
-        sql_utils.update_scores(i_ids = i_id_list, label_weight=label_weight)
+        sql_utils.update_scores(i_ids=i_id_list, label_weight=label_weight, mode='insert')

@@ -637,7 +637,7 @@ def map_probs_column(model_id: int, prob_col: pd.Series) -> pd.Series:
     return prob_col
 
 
-def update_scores(i_ids: list[int], label_weight=1) -> None:
+def update_scores(i_ids: list[int], label_weight: int = 1, mode: str = 'insert') -> None:
     """
     Update the Dissimilarity metrics of a set of image_ids based on
     the decay function with parameter RELABEL_LAMBDA.
@@ -646,20 +646,27 @@ def update_scores(i_ids: list[int], label_weight=1) -> None:
     Parameters:
         i_ids (list, int): list of Image_Ids that have been labeled.
         label_weight (int): the experience of the user that is labeling.
+        mode (str): when this is being called;
+            'insert': inserting new labels
+            'delete': deleting existing labels from the table.
     Returns:
         None
     """
     # Check label_weight validity
-    if not isinstance(label_weight, int) or (int not in set({1, 2, 3, 4, 5})):
-        raise ValueError(f"Expected int in [1,2,3,4,5] for label_weight. Received type{type(label_weight)}, value {label_weight}")
-
+    if mode == 'insert':
+        if not isinstance(label_weight, int) or (label_weight not in set({1, 2, 3, 4, 5})):
+            raise ValueError(f"Expected int in [1,2,3,4,5] for label_weight. Received type{type(label_weight)}, value {label_weight}")
+    if mode == 'delete':
+        if not isinstance(label_weight, int) or (label_weight < 0):
+            raise ValueError(f"Expected positive int for label_weight. Received type{type(label_weight)}, value {label_weight}")
     # Check i_id validity
     for i_id in i_ids:
-        if not (isinstance(i_id, int) and i_id >0):
+        if not (isinstance(i_id, int) and i_id > 0):
             raise ValueError(f"Provided i_id {i_id} is not a positive integer.")
 
     # Generate Query Arguments
-    MULTIPLIER = np.exp(-RELABEL_LAMBDA * label_weight)
+    direction = 1 if (mode == 'insert') else -1
+    MULTIPLIER = np.exp(-RELABEL_LAMBDA * label_weight * direction)
     I_ID_TUPLE = ','.join(str(i_id) for i_id in i_ids)
     # Generate Query
     query_string = f"""
@@ -683,3 +690,56 @@ def update_scores(i_ids: list[int], label_weight=1) -> None:
     return
 
 
+def delete_labels_cleanup(remove_labels_query: str):
+    """
+    Special function to remove bad labels while also accounting for updating
+    the scores of the metric table.
+
+    Parameters:
+        remove_labels_query (str): the preformatted query to be executed.
+    Return:
+        None
+    """
+    # Get a DF of the grouped Label counts per I_IDs
+    label_counts_query = """
+        SELECT
+            I_ID,
+            SUM(WEIGHT) AS W_COUNT
+        FROM LABELS
+        GROUP BY I_ID
+    """
+    pre_del_counts = run_sql_query(query=label_counts_query, server_args=None)
+    pre_del_counts = pre_del_counts.rename(columns={'W_COUNT': 'BEFORE'})
+
+    # Run delete query that is expected to return nothing.
+    with warnings.catch_warnings(record=True) as w:
+        df = run_sql_query(query=remove_labels_query, server_args=None)
+        if w:
+            for warning in w:
+                if "arguments returned empty" in str(warning.message).lower():
+                    continue
+                # Re-emit other warnings
+                warnings.warn(warning.message, category=warning.category, stacklevel=1)
+    if df is not None:
+        warnings.warn(f"Here are the results (expected none):\n{df.head()}", stacklevel=2)
+        print(df)
+
+    # Post deletion query
+    post_del_counts = run_sql_query(query=label_counts_query, server_args=None)
+    post_del_counts = post_del_counts.rename(columns={'W_COUNT': 'AFTER'})
+
+    # Label differences
+    diff_df = pre_del_counts.merge(post_del_counts, on='I_ID', how='left').fillna(0)
+    diff_df['WEIGHT'] = diff_df['BEFORE'].astype(int) - diff_df['AFTER'].astype(int)
+
+    # check to make sure that no weights increased during deletion
+    assert diff_df['WEIGHT'].min() > 0, "Unexpectedly increased total label count during deletion!"
+    label_difference = diff_df.query("WEIGHT > 0")
+
+    # Extract image IDs that need to be modified per label_weights & modify them
+    for label_weight in label_difference['WEIGHT'].unique():
+        subset = diff_df.query(f'WEIGHT == {label_weight}')
+        i_id_list = list(subset['I_ID'].values)
+        update_scores(i_ids=i_id_list, label_weight=label_weight, mode='delete')
+
+    return
