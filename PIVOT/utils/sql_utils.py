@@ -29,12 +29,13 @@ from typing import Optional, Dict, Any, Tuple, Union
 import warnings
 from collections import OrderedDict
 from collections.abc import Sequence
+import numpy as np
 import pandas as pd
 
 import pymssql
 
 # import constants
-from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES
+from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES, RELABEL_LAMBDA
 from utils import load_config
 
 
@@ -181,7 +182,6 @@ def get_test_set_df(model_id: int,
 def get_label_rank_df(model_id: int, #pylint: disable=too-many-arguments
                       dissimilarity_id: int,
                       batch_size: int = 100,
-                      relabel_lambda: float = 0.069,
                       random_ratio: float = 0.5,
                       server_args: Optional[Dict[str, str]] = {}) -> pd.DataFrame:
     """
@@ -192,7 +192,6 @@ def get_label_rank_df(model_id: int, #pylint: disable=too-many-arguments
         model_id (int): The identifier of the model.
         dissimilarity_id (int): The identifier for the various dissimilarity/uncertainty measures of images.
         batch_size (int, optional): The total batch size for label ranking (default is 100).
-        relabel_lambda (float, optional): The relabeling lambda parameter (default is 0.069).
         random_ratio (float, optional): The ratio of random images in the batch (default is 0.5).
         server_args (dict, optional): A dictionary containing connection parameters for the server.
             Expected keys: 'server', 'database', 'username', 'password'.
@@ -206,7 +205,6 @@ def get_label_rank_df(model_id: int, #pylint: disable=too-many-arguments
     args = OrderedDict([
         ("MODEL_ID", model_id),
         ("D_METRIC_ID", dissimilarity_id),
-        ("RELABEL_LAMBDA", relabel_lambda),
         ("BATCH_SIZE", batch_size)
     ])
     # check types
@@ -214,8 +212,6 @@ def get_label_rank_df(model_id: int, #pylint: disable=too-many-arguments
     # check fixed ranges
     if batch_size <= 0:
         raise ValueError("The batch_size must be a positive integer.")
-    if relabel_lambda < 0:
-        raise ValueError("The relabel_lambda must be a positive float.")
     if (random_ratio < 0) or (random_ratio > 1):
         raise ValueError("The random_ratio must be a positive float between 0 & 1.")
 
@@ -619,6 +615,8 @@ def map_probs_column(model_id: int, prob_col: pd.Series) -> pd.Series:
     Parameters:
         model_id (int): model ID for which to get class labels.
         prob_col (pd.Series): the series to modify
+    Returns:
+        pd.Series
     """
     if not isinstance(prob_col, pd.Series):
         raise ValueError(f"Expected a pandas Series, received Type {type(prob_col)}.")
@@ -637,3 +635,51 @@ def map_probs_column(model_id: int, prob_col: pd.Series) -> pd.Series:
     # Convert to dict with full-form class_labels
     prob_col = prob_col.apply(map_keys)
     return prob_col
+
+
+def update_scores(i_ids: list[int], label_weight=1) -> None:
+    """
+    Update the Dissimilarity metrics of a set of image_ids based on
+    the decay function with parameter RELABEL_LAMBDA.
+
+    Note that this only works for image_ids <1000
+    Parameters:
+        i_ids (list, int): list of Image_Ids that have been labeled.
+        label_weight (int): the experience of the user that is labeling.
+    Returns:
+        None
+    """
+    # Check label_weight validity
+    if not isinstance(label_weight, int) or (int not in set({1, 2, 3, 4, 5})):
+        raise ValueError(f"Expected int in [1,2,3,4,5] for label_weight. Received type{type(label_weight)}, value {label_weight}")
+
+    # Check i_id validity
+    for i_id in i_ids:
+        if not (isinstance(i_id, int) and i_id >0):
+            raise ValueError(f"Provided i_id {i_id} is not a positive integer.")
+
+    # Generate Query Arguments
+    MULTIPLIER = np.exp(-RELABEL_LAMBDA * label_weight)
+    I_ID_TUPLE = ','.join(str(i_id) for i_id in i_ids)
+    # Generate Query
+    query_string = f"""
+        UPDATE METRICS
+        SET D_VALUE = D_VALUE * {MULTIPLIER}
+        WHERE I_ID in ({I_ID_TUPLE})
+    """
+    # Run Query that is expected to return nothing.
+    with warnings.catch_warnings(record=True) as w:
+        df = run_sql_query(query=query_string, server_args=None)
+        if w:
+            for warning in w:
+                if "arguments returned empty" in str(warning.message).lower():
+                    continue
+                # Re-emit other warnings
+                warnings.warn(warning.message, category=warning.category, stacklevel=1)
+    if df is not None:
+        warnings.warn(f"Here are the results (expected none):\n{df.head()}", stacklevel=2)
+        print(df)
+
+    return
+
+
