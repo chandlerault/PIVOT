@@ -656,12 +656,8 @@ def update_scores(i_ids: list[int], label_weight: int = 1, mode: str = 'insert')
         None
     """
     # Check label_weight validity
-    if mode == 'insert':
-        if not isinstance(label_weight, (int, np.int32, np.int64)) or (label_weight not in set({1, 2, 3, 4, 5})):
-            raise ValueError(f"Expected int in [1,2,3,4,5] for label_weight. Received type{type(label_weight)}, value {label_weight}")
-    if mode == 'delete':
-        if not isinstance(label_weight, (int, np.int32, np.int64)) or (label_weight < 0):
-            raise ValueError(f"Expected positive int for label_weight. Received type{type(label_weight)}, value {label_weight}")
+    if not isinstance(label_weight, (int, np.int32, np.int64)):
+        raise ValueError(f"Expected positive int for label_weight. Received type{type(label_weight)}, value {label_weight}")
     # Check i_id validity
     for i_id in i_ids:
         if not (isinstance(i_id, (int, np.int32, np.int64)) and i_id > 0):
