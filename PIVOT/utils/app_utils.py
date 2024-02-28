@@ -15,6 +15,7 @@ import time
 from datetime import datetime
 import cv2
 from utils import data_utils
+from utils import sql_utils
 import numpy as np
 import streamlit as st
 
@@ -123,3 +124,10 @@ def insert_label(df):
     df['date'] = datetime.now()
     labels = df.to_dict(orient='records')
     data_utils.insert_data('labels', labels)
+
+    # Update metrics table
+    label_weights = df['weight'].unique()
+    for label_weight in label_weights:
+        subset = df.query(f'weight == {label_weight}')
+        i_id_list = list(subset['i_id'].values)
+        sql_utils.update_scores(i_ids=i_id_list, label_weight=label_weight, mode='insert')

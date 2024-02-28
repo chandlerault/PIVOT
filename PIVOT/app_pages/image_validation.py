@@ -311,24 +311,6 @@ def main():
         with st.expander("Advanced Specifications"):
             two_columns = st.columns(2)
             with two_columns[0]:
-
-                # Prompt user for relabeling frequency
-                lambda_vals = [round(x * 0.001, 3) for x in range(0, 1001)]
-                state.session_lambda = st.select_slider(
-                                label="How often would you like to revalidate images?",
-                                options=lambda_vals,
-                                value=lambda_vals[69],
-                                help="""
-                        To ensure crowd surfed labels are accurate, labels should be validated
-                        more than once. This slider allows users to determine how quickly images
-                        are revalidated. 
-                
-                        A larger value will lead to **less frequent** relabeling.
-
-                        A smaller value will lead to **more frequent** relabeling.""")
-
-            with two_columns[1]:
-
                 # Prompt user for purpose using a scale
                 purpose = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
                 state.session_purpose = st.select_slider(
@@ -361,7 +343,6 @@ def main():
             state.label_df = sql_utils.get_label_rank_df(model_id=state.session_model,
                                                 dissimilarity_id=state.session_dissim,
                                                 batch_size=state.session_number,
-                                                relabel_lambda=state.session_lambda,
                                                 random_ratio=state.session_purpose)
             # st.toast("Retrieved Images!")
 

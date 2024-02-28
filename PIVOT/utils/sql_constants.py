@@ -17,7 +17,6 @@ SP_ARGS_TYPE_MAPPING: Dict[str, Optional[OrderedDict[str, Any]]] = {
     "AL_RANKINGS": OrderedDict([
         ('MODEL_ID', int),
         ('D_METRIC_ID', int),
-        ('RELABEL_LAMBDA', float),
         ('BATCH_SIZE', int)
     ]),
     "MODEL_EVALUATION_NON_TEST": OrderedDict([
@@ -58,3 +57,6 @@ SP_FILE_NAMES: Dict[str, str] = {
     "GENERATE_IMAGES_TO_PREDICT": "./stored_procedures/Images_To_Predict.sql",
     "GENERATE_IMAGES_TO_METRIZE": "./stored_procedures/Images_To_Metrize.sql"
 }
+
+# Lambda for rescoring metric with geometric decay function each time it gets labeled.
+RELABEL_LAMBDA = 0.069
