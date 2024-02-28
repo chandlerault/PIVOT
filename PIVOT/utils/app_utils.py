@@ -15,8 +15,8 @@ import time
 from datetime import datetime
 import cv2
 from utils import data_utils
-from PIL import Image
 import numpy as np
+import streamlit as st
 
 def create_user(user_info):
     """
@@ -32,6 +32,7 @@ def create_user(user_info):
     u_id = data_utils.insert_data('users', user_info)
     return u_id
 
+@st.cache_data(show_spinner="Retrieving User", ttl="1d")
 def get_user(email):
     """
     Gets the u_id associated with the email if it exists. Otherwise returns None.
@@ -47,6 +48,7 @@ def get_user(email):
         return user[0]
     return None
 
+@st.cache_data(show_spinner="Retrieving Models", ttl="1d")
 def get_models():
     """
     Gets all the unique models and their m_id's.
@@ -56,35 +58,37 @@ def get_models():
     """
     return data_utils.select_distinct('models', ['model_name','m_id'])
 
+@st.cache_data(show_spinner="Retrieving Dissimilarities", ttl="1d")
 def get_dissimilarities():
     """
     Gets all the unique dissimilarity metrics and their d_id's.
 
     Returns:
-        model_list (list<Dict>): A list of dictionaries with keys name and d_id.
+        dissimilarity_list (list<Dict>): A list of dictionaries with keys name and d_id.
     """
     return data_utils.select_distinct('dissimilarity', ['name','d_id'])
 
+@st.cache_data(show_spinner="Retrieving Image")
 def get_image(file_path):
     """
     Gets the image associated with the file_path. Otherwise returns None.
 
     Args: 
-        email (str): String of a user's email.
+        file_path (str): String of the blob filepath.
 
     Returns:
-        u_id (int/None): The u_id for the user with the email. Otherwise None.
+        image (np.array): The image array in grayscale
     """
-
     image_contents = data_utils.get_blob_bytes(file_path)
     if image_contents.startswith(b'\x89PNG\r\n\x1a\n'):
-        print("The blob contains a valid PNG image.")
+        image = np.frombuffer(image_contents, dtype=np.uint8)
+        image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED) # pylint: disable=no-member
+        image = data_utils.preprocess_input(image)
     else:
         print("The blob does not appear to be a valid PNG image.")
-    image = np.frombuffer(image_contents, dtype=np.uint8)
-    image = cv2.imdecode(image, cv2.IMREAD_UNCHANGED) # pylint: disable=no-member
-    image = data_utils.preprocess_input(image)
-    return Image.fromarray(image.reshape(image.shape[:2]))
+        image = np.zeros((128,128))
+        image = data_utils.preprocess_input(image)
+    return image.reshape(image.shape[:2])
 
 def await_connection(max_time=60, step=5):
     """
