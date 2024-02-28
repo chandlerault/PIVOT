@@ -1,4 +1,4 @@
-name: pivot-modAL
+name: pivot
 channels:
   - defaults
   - conda-forge

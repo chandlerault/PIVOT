@@ -106,14 +106,14 @@ Please note that Git is required to run the above command. For instructions on d
 ### Environment
 This application is built on top of multiple Python packages with specific version requirements. Installing these packages can cause conflicts with other packages in the workspace. As a work-around, we recommend to use `conda` to create an isolated Python environment with all necessary packages. Specifically, the list of necessary packages can be found at in the [`environment.yml`](./environment.yml) file.
 
-To create our specified `pivot-modAL` Conda environment, run the following command:
+To create our specified `pivot` Conda environment, run the following command:
 ```bash
 conda env create -f environment.yml
 ```
 
 Once the Conda environment is created, it can be activated by:
 ```bash
-conda activate pivot-modAL
+conda activate pivot
 ```
 After coding inside the environment, it can be deactivated with the command:
 ```bash
@@ -142,7 +142,7 @@ The deployment and hosting of the pre-trained CNN model are managed through [Azu
 ## Application
 We generated our application through the open-source `streamlit` package. A local application can be generated with the code:
 ```bash
-conda activate pivot-modAL
+conda activate pivot
 streamlit run PIVOT/app.py
 ```
 This will pop up a browser window with the functioning web-application.
