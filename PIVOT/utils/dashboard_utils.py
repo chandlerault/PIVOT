@@ -17,8 +17,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 import plotly.figure_factory as ff
+import streamlit as st
 
-from sklearn.metrics import precision_score, recall_score, confusion_matrix, classification_report
+from sklearn.metrics import precision_score, recall_score, roc_auc_score, \
+                            confusion_matrix, classification_report, roc_curve, auc
+
 
 def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.cm.YlGnBu):
     """
@@ -37,31 +40,52 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.c
     """
     con_matrix = confusion_matrix(cm_df[col_names[0]], cm_df[col_names[1]])
 
-    fig = plt.subplots()
-    plt.imshow(con_matrix, interpolation='nearest', cmap=cmap)
-    plt.title('Confusion Matrix')
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=90)
-    plt.yticks(tick_marks, classes)
+    x = classes
+    y = classes
 
     if normalize:
-        con_matrix = con_matrix.astype('float') / con_matrix.sum(axis=1)[:, np.newaxis]
+        con_matrix = np.around(con_matrix.astype('float') / con_matrix.sum(axis=1)[:, np.newaxis], 2)
+    z = con_matrix
 
-    thresh = con_matrix.max() / 2.
+    # change each element of z to type string for annotations
+    z_text = [[str(y) for y in x] for x in z]
 
-    for i, j in itertools.product(range(con_matrix.shape[0]), range(con_matrix.shape[1])):
-        plt.text(j, i, format(con_matrix[i, j], '.2f' if normalize else 'd'),
-        horizontalalignment="center",
-        color="#04712f" if con_matrix[i, j] > thresh else "grey")
+    # set up figure 
+    fig = ff.create_annotated_heatmap(z, x=list(x), y=list(y), annotation_text=z_text, colorscale='GnBu')
 
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
+    # add title
+    fig.update_layout(title_text='<i><b>Confusion Matrix</b></i>',
+                    #xaxis = dict(title='x'),
+                    #yaxis = dict(title='x')
+                    )
 
-    return fig[0]
+    # add custom xaxis title
+    fig.add_annotation(dict(font=dict(color="black",size=14),
+                            x=0.5,
+                            y=-0.15,
+                            showarrow=False,
+                            text="Predicted value",
+                            xref="paper",
+                            yref="paper"))
 
-def plot_precision_recall(class_report):
+    # add custom yaxis title
+    fig.add_annotation(dict(font=dict(color="black",size=14),
+                            x=-0.35,
+                            y=0.5,
+                            showarrow=False,
+                            text="Real value",
+                            textangle=-90,
+                            xref="paper",
+                            yref="paper"))
+
+    # adjust margins to make room for yaxis title
+    fig.update_layout(margin=dict(t=50, l=200))
+
+    # add colorbar
+    fig['data'][0]['showscale'] = True
+    return fig
+
+def plot_precision_recall_f1(class_report):
     """
     This function plots a bar graph of a models precision and recall by class.
 
@@ -76,31 +100,16 @@ def plot_precision_recall(class_report):
     fig.add_trace(go.Bar(x=class_report['class_label'],
                          y=class_report['precision'],
                          name='Precision',
-                         marker_color='#1cb4ff'))
+                         marker_color='#094789'))
     fig.add_trace(go.Bar(x=class_report['class_label'],
                          y=class_report['recall'],
                          name='Recall',
-                         marker_color='#04712f'))
-    fig.update_layout(title_text='Model Performance: Precision and Recall')
-
-    return fig
-
-def plot_f1_score(class_report):
-    """
-    This function plots a bar graph of a models f1 score by class.
-
-    Args:
-        - class_labels (list): The labels as strings of all model classes.
-        - f1_score (list): A list of f1 scores (as floats) for each class.
-
-    Returns:
-        - fig: A matplotlib figure.
-    """
-    fig = go.Figure()
+                         marker_color='#9cd9b9'))
     fig.add_trace(go.Bar(x=class_report['class_label'], 
                          y=class_report['f1-score'],
-                         marker_color='#0d205f'))
-    fig.update_layout(title_text='Model Performance: F1 Score')
+                         name='F1 Score',
+                         marker_color='#4cb1d2'))
+    fig.update_layout(title_text='<i><b>Model Performance: Precision, Recall, and F1 Score</b></i>')
 
     return fig
 
@@ -155,3 +164,36 @@ def get_acc_prec_recall(model_df, col_names):
                           model_df[col_names[2]],
                           average='weighted')
     return (accuracy, precision, recall)
+
+def plot_roc_curve(true_label, prob_label, classes):
+    # One hot encode the labels in order to plot them
+    y_onehot = pd.get_dummies(true_label, columns=classes)
+
+    # Create an empty figure, and iteratively add new lines
+    # every time we compute a new class
+    fig = go.Figure()
+    fig.add_shape(
+        type='line', line=dict(dash='dash'),
+        x0=0, x1=1, y0=0, y1=1
+    )
+
+    for i in range(prob_label.shape[1]):
+        y_true = y_onehot.iloc[:, i]
+        y_score = prob_label.iloc[:, i]
+
+        fpr, tpr, _ = roc_curve(y_true, y_score)
+        auc_score = roc_auc_score(y_true, y_score)
+
+        name = f"{classes[i]} (AUC={auc_score:.2f})"
+        fig.add_trace(go.Scatter(x=fpr, y=tpr, name=name, mode='lines'))
+
+    fig.update_layout(
+        xaxis_title='False Positive Rate',
+        yaxis_title='True Positive Rate',
+        title_text='<i><b>ROC Curve</b></i>',
+        margin=dict(t=50, l=100)
+        #yaxis=dict(scaleanchor="x", scaleratio=1),
+        #xaxis=dict(constrain='domain'),
+        #width=700, height=500
+    )
+    return fig

@@ -40,58 +40,25 @@ def main():
         st.metric("Recall:", f"{model_stats[2]*100:.2f} %")
 
     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
-
-    st.markdown("""<h6 style='text-align: left; color: black;'>
-                Filter Phytoplankton Subcategories</h6>""",
-                unsafe_allow_html=True)
-
-    filtered_phyto = list(range(0,10,1))
-
-    check_box_columns = st.columns(5)
-    with check_box_columns[0]:
-        filtered_phyto[0] = st.checkbox(class_labels[0], value=1)
-        filtered_phyto[5] = st.checkbox(class_labels[5], value=1)
-    with check_box_columns[1]:
-        filtered_phyto[1] = st.checkbox(class_labels[1], value=1)
-        filtered_phyto[6] = st.checkbox(class_labels[6], value=1)
-    with check_box_columns[2]:
-        filtered_phyto[2] = st.checkbox(class_labels[2], value=1)
-        filtered_phyto[7] = st.checkbox(class_labels[7], value=1)
-    with check_box_columns[3]:
-        filtered_phyto[3] = st.checkbox(class_labels[3], value=1)
-        filtered_phyto[8] = st.checkbox(class_labels[8], value=1)
-    with check_box_columns[4]:
-        filtered_phyto[4] = st.checkbox(class_labels[4], value=1)
-        filtered_phyto[9] = st.checkbox(class_labels[9], value=1)
-
     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
-
-    count = 0
-    for idx, item in enumerate(filtered_phyto):
-        if item is False:
-            model_pred = model_pred[model_pred['true_label'] != idx]
-            model_pred = model_pred[model_pred['pred_label'] != idx]
-            del class_labels[idx-count]
-            count += 1
 
     if model_pred.empty:
         st.error("Please select at LEAST one phytoplankton to view.")
     else:
-        five_columns = st.columns([.5,2,.5,2,.5])
-        with five_columns[1]:
+        three_columns = st.columns([5,.2,5])
+        with three_columns[0]:
+            st.plotly_chart(ds.plot_confusion_matrix(model_pred,
+                                            ['true_label', 'pred_label'],
+                                            classes=class_labels,
+                                            normalize=True), use_container_width=True)
             c_report = ds.get_classification_report(model_pred,
                                                     ['true_label','pred_label'],
                                                     class_names = class_labels)
-            st.plotly_chart(ds.plot_precision_recall(c_report),
-                            use_container_width=True)
 
-            st.markdown("""<h1></h1>""", unsafe_allow_html=True)
-
-            st.pyplot(ds.plot_confusion_matrix(model_pred,
-                                            ['true_label', 'pred_label'],
-                                            classes=class_labels,
-                                            normalize=True))
-        with five_columns[3]:
+        with three_columns[2]:
             c_report = c_report.sort_values(by=['f1-score'], ascending=False)
-            st.plotly_chart(ds.plot_f1_score(c_report),
-                            use_container_width=True)
+            st.plotly_chart(ds.plot_roc_curve(model_pred['true_label'],
+                                              model_pred.iloc[:, 5:15], 
+                                              class_labels), use_container_width=True)
+        st.plotly_chart(ds.plot_precision_recall_f1(c_report),
+                        use_container_width=True)
