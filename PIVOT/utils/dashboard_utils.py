@@ -184,7 +184,7 @@ def plot_roc_curve(true_label, prob_label, classes):
         fpr, tpr, _ = roc_curve(y_true, y_score)
         auc_score = roc_auc_score(y_true, y_score)
 
-        name = f"{y_onehot.columns[i]} (AUC={auc_score:.2f})"
+        name = f"{classes[i]} (AUC={auc_score:.2f})"
         fig.add_trace(go.Scatter(x=fpr, y=tpr, name=name, mode='lines'))
 
     fig.update_layout(
