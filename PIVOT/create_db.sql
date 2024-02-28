@@ -1,45 +1,44 @@
 CREATE TABLE models (
-    m_id int IDENTITY(1,1) PRIMARY KEY,
-    model_name VARCHAR(255) NOT NULL,
-    model_link VARCHAR(MAX),
-    structure VARCHAR(MAX),
-    weights VARCHAR(MAX)
+    m_id int IDENTITY(1,1) PRIMARY KEY, -- unique model identifier
+    model_name VARCHAR(255) NOT NULL, -- name of CNN model
+    model_link VARCHAR(MAX), -- MLFlow link to model
+    class_map VARCHAR(MAX) NOT NULL -- dictionary of class labels
 );
 
 CREATE TABLE images (
-    i_id int IDENTITY(1,1) PRIMARY KEY,
-    filepath VARCHAR(255) NOT NULL UNIQUE
+    i_id int IDENTITY(1,1) PRIMARY KEY, -- unique image identifier
+    filepath VARCHAR(255) NOT NULL UNIQUE -- file path to image in Azure Blob 
 );
 
 CREATE TABLE dissimilarity (
-    d_id  int IDENTITY(1,1) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    formula VARCHAR(MAX)
+    d_id int IDENTITY(1,1) PRIMARY KEY, -- unique dissimilarity identifier
+    name VARCHAR(255) NOT NULL, -- name of dissimilarity metric
+    formula VARCHAR(MAX) -- formula to calculate dissimilarity metric
 );
 
 CREATE TABLE users (
-    u_id  int IDENTITY(1,1) PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    experience INT NOT NULL, 
-    lab VARCHAR(255) NOT NULL
+    u_id int IDENTITY(1,1) PRIMARY KEY, -- unique user identifier
+    email VARCHAR(255) NOT NULL, -- email of user
+    name VARCHAR(255) NOT NULL, -- name of user
+    experience INT NOT NULL, -- experience level of user
+    lab VARCHAR(255) NOT NULL -- laboratory of user
 );
 
 CREATE TABLE predictions (
-    m_id int NOT NULL,
-    i_id int NOT NULL,
-    class_prob VARCHAR(255)  NOT NULL,
-    pred_label VARCHAR(255)  NOT NULL,
+    m_id int NOT NULL, -- unique model identifier
+    i_id int NOT NULL, -- unique image identifier
+    class_prob VARCHAR(255)  NOT NULL, -- predicted probability of image belonging to each class
+    pred_label VARCHAR(255)  NOT NULL, -- label predicted by model
     PRIMARY KEY (m_id, i_id),
     FOREIGN KEY (m_id) REFERENCES models(m_id),
     FOREIGN KEY (i_id) REFERENCES images(i_id)
 );
 
 CREATE TABLE metrics (
-    i_id int  NOT NULL,
-    m_id int NOT NULL,
-    d_id int NOT NULL,
-    d_value FLOAT NOT NULL,
+    i_id int  NOT NULL, -- unique image identifier
+    m_id int NOT NULL, -- unique model identifier
+    d_id int NOT NULL, -- unique dissimilarity identifier
+    d_value FLOAT NOT NULL, -- value of dissimilarity metric
     PRIMARY KEY (m_id, i_id, d_id),
     FOREIGN KEY (i_id) REFERENCES images(i_id),
     FOREIGN KEY (m_id) REFERENCES models(m_id),
@@ -47,11 +46,11 @@ CREATE TABLE metrics (
 );
 
 CREATE TABLE labels (
-    i_id int NOT NULL,
-    u_id int NOT NULL,
-    weight int NOT NULL,
-    date DATETIME NOT NULL,
-    label VARCHAR(255) NOT NULL,
+    i_id int NOT NULL, -- unique image identifier
+    u_id int NOT NULL, -- unique user identifier
+    weight int NOT NULL, -- weight of label
+    date DATETIME NOT NULL, -- date and time of label creation
+    label VARCHAR(255) NOT NULL, -- image label
     FOREIGN KEY (i_id) REFERENCES images(i_id),
     FOREIGN KEY (u_id) REFERENCES users(u_id)
 );

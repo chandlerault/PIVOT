@@ -7,6 +7,7 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 
 from utils import sql_utils
 from utils import app_utils
@@ -46,8 +47,13 @@ def main():
 
             st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
-            validated_df = sql_utils.get_test_set_df(selected_model_sum)
+            if selected_model_sum:
+                validated_df = sql_utils.get_test_set_df(selected_model_sum)
+            else:
+                validated_df = None
+
             if validated_df is not None:
+
                 validated_df['IS_CORRECT'] = (validated_df['PRED_LABEL'] == \
                                             validated_df['CONSENSUS']).astype(int)
                 val_stats = ds.get_acc_prec_recall(validated_df,
@@ -76,23 +82,34 @@ def main():
                                 delta=f"{(val_stats[2] - model_stats[2])*100:.2f} %")
 
                 st.markdown("""<h1></h1>""", unsafe_allow_html=True)
+                st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
-                five_columns = st.columns([.5,2,.5,2,.5])
-                with five_columns[1]:
+                three_columns = st.columns([5,.2,5])
+                with three_columns[0]:
                     c_report_test = ds.get_classification_report(
                                     validated_df,
                                     ['CONSENSUS', 'PRED_LABEL', None])
-                    st.plotly_chart(ds.plot_precision_recall(c_report_test),
-                              use_container_width=True)
 
-                    st.markdown("""<h1></h1>""", unsafe_allow_html=True)
+                    st.plotly_chart(ds.plot_confusion_matrix(validated_df,
+                                                ['CONSENSUS', 'PRED_LABEL'],
+                                                classes=c_report_test.index,
+                                                normalize=True), use_container_width=True)
 
-                    st.pyplot(ds.plot_confusion_matrix(validated_df,
-                                                        ['CONSENSUS', 'PRED_LABEL'],
-                                                        classes=c_report_test.index,
-                                                        normalize=True))
-                with five_columns[3]:
+                st.plotly_chart(ds.plot_precision_recall_f1(c_report_test),
+                                use_container_width=True)
+
+                with three_columns[2]:
                     c_report_test = c_report_test.sort_values(by=['f1-score'],
                                                               ascending=False)
-                    st.plotly_chart(ds.plot_f1_score(c_report_test),
-                                               use_container_width=True)
+                    
+                    agg_df = validated_df.groupby(['PRED_LABEL', 'CONSENSUS']).size().reset_index(name='count')
+
+                    fig = px.sunburst(agg_df, path=['PRED_LABEL', 'CONSENSUS'], values='count')
+                    fig.update_traces(
+                                        marker_colors=[
+                                            px.colors.qualitative.Prism[c] for c in pd.factorize(fig.data[0].labels)[0]
+                                        ],
+                                        leaf_opacity=.8,
+                                    )
+                    fig.update_layout(title_text='<i><b>Sunburst Plot</b></i>')
+                    st.plotly_chart(fig, use_container_width=True)

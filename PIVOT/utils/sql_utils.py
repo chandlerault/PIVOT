@@ -25,7 +25,7 @@ Functions:
 """
 import os
 import ast
-from typing import Optional, Dict, Any, Tuple, Union
+from typing import Optional, Dict, Any, Tuple, Union, AsyncGenerator
 import warnings
 from collections import OrderedDict
 from collections.abc import Sequence
@@ -34,7 +34,7 @@ import pandas as pd
 import streamlit as st
 
 import pymssql
-
+from tqdm.auto import tqdm, trange
 # import constants
 from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES, RELABEL_LAMBDA
 from utils import load_config
@@ -161,7 +161,7 @@ def get_test_set_df(model_id: int,
             Default values are taken from the `CONFIG` dictionary.
     Returns:
         pd.DataFrame: A DataFrame containing image metadata and model predictions for a given model_id.
-            Columns: IMAGE_ID, PRED_LABEL, CONSENSUS
+            Columns: IMAGE_ID, PRED_LABEL, PROBS, CONSENSUS
     """
     # Check that the sp_name is valid
     valid_sp_names = {'MODEL_EVALUATION_MAX_CONSENSUS_FILTERING', 'MODEL_EVALUATION_NON_TEST'}
@@ -176,6 +176,9 @@ def get_test_set_df(model_id: int,
         raise ValueError("The minimum_percent must be a positive float between 0.0 and 1.0")
 
     df = execute_stored_procedure(sp=sp_name, args=args, server_args=server_args)
+
+    # Convert PROBS from strings to dict with full-form class_labels
+    df['PROBS'] = map_probs_column(model_id=model_id, prob_col=df['PROBS'])
 
     return df
 
@@ -653,15 +656,11 @@ def update_scores(i_ids: list[int], label_weight: int = 1, mode: str = 'insert')
         None
     """
     # Check label_weight validity
-    if mode == 'insert':
-        if not isinstance(label_weight, int) or (label_weight not in set({1, 2, 3, 4, 5})):
-            raise ValueError(f"Expected int in [1,2,3,4,5] for label_weight. Received type{type(label_weight)}, value {label_weight}")
-    if mode == 'delete':
-        if not isinstance(label_weight, int) or (label_weight < 0):
-            raise ValueError(f"Expected positive int for label_weight. Received type{type(label_weight)}, value {label_weight}")
+    if not isinstance(label_weight, (int, np.int32, np.int64)):
+        raise ValueError(f"Expected positive int for label_weight. Received type{type(label_weight)}, value {label_weight}")
     # Check i_id validity
     for i_id in i_ids:
-        if not (isinstance(i_id, int) and i_id > 0):
+        if not (isinstance(i_id, (int, np.int32, np.int64)) and i_id > 0):
             raise ValueError(f"Provided i_id {i_id} is not a positive integer.")
 
     # Generate Query Arguments
@@ -672,11 +671,11 @@ def update_scores(i_ids: list[int], label_weight: int = 1, mode: str = 'insert')
     query_string = f"""
         UPDATE METRICS
         SET D_VALUE = D_VALUE * {MULTIPLIER}
-        WHERE I_ID in ({I_ID_TUPLE})
+        WHERE I_ID IN ({I_ID_TUPLE})
     """
     # Run Query that is expected to return nothing.
     with warnings.catch_warnings(record=True) as w:
-        df = run_sql_query(query=query_string, server_args=None)
+        df = run_sql_query(query=query_string, server_args={})
         if w:
             for warning in w:
                 if "arguments returned empty" in str(warning.message).lower():
@@ -708,12 +707,12 @@ def delete_labels_cleanup(remove_labels_query: str):
         FROM LABELS
         GROUP BY I_ID
     """
-    pre_del_counts = run_sql_query(query=label_counts_query, server_args=None)
+    pre_del_counts = run_sql_query(query=label_counts_query, server_args={})
     pre_del_counts = pre_del_counts.rename(columns={'W_COUNT': 'BEFORE'})
 
     # Run delete query that is expected to return nothing.
     with warnings.catch_warnings(record=True) as w:
-        df = run_sql_query(query=remove_labels_query, server_args=None)
+        df = run_sql_query(query=remove_labels_query, server_args={})
         if w:
             for warning in w:
                 if "arguments returned empty" in str(warning.message).lower():
@@ -725,7 +724,7 @@ def delete_labels_cleanup(remove_labels_query: str):
         print(df)
 
     # Post deletion query
-    post_del_counts = run_sql_query(query=label_counts_query, server_args=None)
+    post_del_counts = run_sql_query(query=label_counts_query, server_args={})
     post_del_counts = post_del_counts.rename(columns={'W_COUNT': 'AFTER'})
 
     # Label differences
@@ -740,6 +739,18 @@ def delete_labels_cleanup(remove_labels_query: str):
     for label_weight in label_difference['WEIGHT'].unique():
         subset = diff_df.query(f'WEIGHT == {label_weight}')
         i_id_list = list(subset['I_ID'].values)
-        update_scores(i_ids=i_id_list, label_weight=label_weight, mode='delete')
+        for i_id_chunk in tqdm(chunky(i_id_list, 500), total=len(i_id_list)//500, desc="Chunked I_IDs", leave=False):
+            update_scores(i_ids=i_id_chunk, label_weight=label_weight, mode='delete')
 
     return
+
+
+def chunky(lst: list, n: int = 500) -> AsyncGenerator[int, None]:
+    """
+    Break up a list in into chunks to make it easier to push.
+    Parameters:
+        lst (list): the list to chunkify
+        n (int): the size of each chunk. Size is 500.
+    """
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
