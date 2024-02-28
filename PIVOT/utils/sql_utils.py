@@ -31,6 +31,7 @@ from collections import OrderedDict
 from collections.abc import Sequence
 import numpy as np
 import pandas as pd
+import streamlit as st
 
 import pymssql
 
@@ -178,7 +179,7 @@ def get_test_set_df(model_id: int,
 
     return df
 
-
+@st.cache_data(show_spinner="Retrieving new batch")
 def get_label_rank_df(model_id: int, #pylint: disable=too-many-arguments
                       dissimilarity_id: int,
                       batch_size: int = 100,
@@ -200,7 +201,6 @@ def get_label_rank_df(model_id: int, #pylint: disable=too-many-arguments
         pd.DataFrame: A DataFrame containing image metadata ranked by dissimilarity and label count.
             Columns: IMAGE_ID, BLOB_FILEPATH, UNCERTAINTY, PRED_LABEL, PROBS, RANK_SCORE
     """
-
     # Check basic arguments:
     args = OrderedDict([
         ("MODEL_ID", model_id),
