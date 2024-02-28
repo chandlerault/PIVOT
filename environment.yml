@@ -25,3 +25,4 @@ dependencies:
       - opencv-python
       - streamlit_option_menu
       - pymssql>=2.2
+      - umap-learn
