@@ -448,12 +448,10 @@ def main():
                         app_utils.insert_label(state.new_df)
                         state.counter = 0
                         sql_utils.get_label_rank_df.clear()
-                        state.label_df = sql_utils.get_label_rank_df(
-                            model_id=state.session_model,
-                            dissimilarity_id=state.session_dissim,
-                            batch_size=state.session_number,
-                            relabel_lambda=state.session_lambda,
-                            random_ratio=state.session_purpose)
+                        state.label_df = sql_utils.get_label_rank_df(model_id=state.session_model,
+                                                    dissimilarity_id=state.session_dissim,
+                                                    batch_size=state.session_number,
+                                                    random_ratio=state.session_purpose)
                         state.new_df = pd.DataFrame(columns=['i_id', 'u_id', 'weight', 'label'])
 
                         st.rerun()
