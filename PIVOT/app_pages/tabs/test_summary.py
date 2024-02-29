@@ -153,4 +153,3 @@ def main():
                 fig.update_layout(title_text='<i><b>Title of Normal Bar Chart</b></i>')
 
                 st.plotly_chart(fig)
-

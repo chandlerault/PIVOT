@@ -3,13 +3,13 @@ Contains the logic about how to run the model and
 read the input data submitted by the deployment executor.
 Each model deployment has a scoring script (and any other required dependencies).
 
-Intended input for run() to be './scoring_data.json'. 
+Intended input for run() to be './scoring_data.json'.
 """
 import os
 import logging
 import joblib
 import requests
-import yaml
+from utils import load_config
 
 def init():
     """
@@ -35,17 +35,17 @@ def run(json_payload):
     Parameters:
         json_payload (json): JSON file containing three sample data to be used for testing.
     """
-    # Read in config, change when import works
-    with open("config.yaml", encoding='utf-8') as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
+    CONFIG = load_config()
+    
+    scoring_uri = f'https://{endpoint_name}.westus2.inference.ml.azure.com/score'.format(
+        endpoint_name=CONFIG['endpoint_name'])
 
-    scoring_uri = config['scoring_uri'].format(endpoint_name='basemodel-endpoint')
-    api_key = config['api_key']
+    api_key = CONFIG['api_key']
 
     # The azureml-model-deployment header will force the request to go to a specific deployment.
     headers = {'Content-Type':'application/json',
                'Authorization':('Bearer '+ api_key),
-               'azureml-model-deployment': 'pivot-basemodel'}
+               'azureml-model-deployment': CONFIG['deployment_name']}
 
     # Make the prediction request
     response = requests.post(scoring_uri,

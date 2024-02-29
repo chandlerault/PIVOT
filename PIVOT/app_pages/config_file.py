@@ -38,8 +38,8 @@ def main():
                     unsafe_allow_html=True)
 
         # Prompt user for Blog Storage info
-        connection_string = st.text_input(label="Connection String:")
-        image_container = st.text_input("Image Container")
+        connection_string = st.text_input(label="Connection String:", key='connection_string')
+        image_container = st.text_input("Image Container:", key='image_container')
 
         st.divider()
 
@@ -50,11 +50,29 @@ def main():
         # Prompt user for SQL Database info
         left_1, right_1 = st.columns(2)
         with left_1:
-            server = st.text_input("Server Name:")
-            db_user = st.text_input("Admin Username:")
+            server = st.text_input("Server Name:", key='server')
+            db_user = st.text_input("Admin Username:", key='db_user')
         with right_1:
-            database = st.text_input("Database Name:")
-            db_password = st.text_input("Password:")
+            database = st.text_input("Database Name:", key='database')
+            db_password = st.text_input("Password:", key='db_password')
+
+        st.divider()
+
+        st.markdown("""<h3 style='text-align: left; color: black;'>
+                    Azure ML Model</h3>""",
+                    unsafe_allow_html=True)
+
+        left_2, right_2 = st.columns(2)
+        with left_2:
+            subscription_id = st.text_input(label="Subscription ID:", key="subscription_id")
+            resource_group = st.text_input("Resource Group:", key='resource_group')
+            workspace_name = st.text_input("Workspace Name:", key='workspace_name')
+            experiment_name = st.text_input('Experiment Name:', key='experiment_name')
+        with right_2:
+            api_key = st.text_input("Model API Key:", key='api_key')
+            model_name = st.text_input("Model Name:", key='model_name')
+            endpoint_name = st.text_input("Model Endpoint Name:", key='endpoint_name')
+            deployment_name = st.text_input("Model Deployment Name:", key='deployment_name')
 
         st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
@@ -68,6 +86,14 @@ def main():
                 st.write("*Database Name:*", config_dict['database'])
                 st.write("*Admin Username:*", config_dict['db_user'])
                 st.write("*Password:*", config_dict['db_password'])
+                st.write("*Subscription ID:*", config_dict['subscription_id'])
+                st.write("*Resource Group:*", config_dict['workspace_name'])
+                st.write("*Workspace Name:*", config_dict['db_password'])
+                st.write("*Experiment Name:*", config_dict['experiment_name'])
+                st.write("*Model API Key:*", config_dict['api_key'])
+                st.write("*Model Name:*", config_dict['model_name'])
+                st.write("*Model Endpoint Name:*", config_dict['endpoint_name'])
+                st.write("*Model Deployment Name:*", config_dict['deployment_name'])
             st.warning("""Warning! By submitting, you will overwrite your
                        database configurations.""")
 
@@ -80,4 +106,12 @@ def main():
                 file.write("database: " + database + "\n")
                 file.write("db_user: " + db_user + "\n")
                 file.write("db_password: " + db_password + "\n")
+                file.write("subscription_id: " + subscription_id + "\n")
+                file.write("resource_group: " + resource_group + "\n")
+                file.write("workspace_name: " + workspace_name + "\n")
+                file.write("experiment_name: " + experiment_name + "\n")
+                file.write("api_key: " + api_key + "\n")
+                file.write("model_name: " + model_name + "\n")
+                file.write("endpoint_name: " + endpoint_name + "\n")
+                file.write("deployment_name: " + deployment_name + "\n")
             st.rerun()

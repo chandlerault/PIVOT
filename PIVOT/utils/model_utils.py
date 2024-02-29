@@ -3,27 +3,29 @@ This file contains utility functions for making model predictions via requests
 to the REST endpoint of deployed (stream endpoint) model on Azure ML.
 
 Classes:
-    - NumpyArrayEncoder:
+    - NumpyArrayEncoder: Helper function to serialize a np.ndarray into a JSON String.
+        Sourced from https://pynative.com/python-serialize-numpy-ndarray-into-json/
 
 Functions:
     - get_model_info: Retrieves the name of the deployed Azure ML model endpoint given a model ID.
     - preprocess_input: Preprocesses an input image by resizing it to a fixed size and normalizing pixel values.
     - predict: Calls the REST endpoint of the specified model to make predictions for all specified images.
     - get_predictions: Retrieves and formats model predictions.
+    - load_local_model: Loads locally saved model as keras model.
 """
 import json
 from json import JSONEncoder
-import yaml
 import requests
 
 import numpy as np
 import pandas as pd
 import cv2
 import imageio
+from tensorflow.keras.models import model_from_json
 
-from azure.identity import DefaultAzureCredential
-from azure.ai.ml import MLClient
 from azureml.core import Workspace, Experiment
+
+from utils import load_config
 
 def get_model_info(m_id):
     """
@@ -35,21 +37,21 @@ def get_model_info(m_id):
     Returns:
         endpoint_name (str): The name of the model endpoint to be called to make predictions.
     """
-    # Remove this once I can actually access config through import
-    with open("../model_serving/config.yaml", encoding='utf-8') as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
-    ml_client = MLClient(subscription_id=config['subscription_id'],
-                         resource_group=config["resource_group"],
-                         workspace_name=config['workspace_name'],
-                         credential=DefaultAzureCredential())
+    CONFIG = load_config()
 
-    workspace = Workspace.from_config('../model_serving/config.json')
-    experiment_name = config['experiment_name']
+    workspace = Workspace.create(name=CONFIG['workspace_name'],
+                      subscription_id=CONFIG['subscription_id'],
+                      resource_group=CONFIG["resource_group"],
+                      location='westus2'
+                     )
+
+    experiment_name = CONFIG['experiment_name']
     experiment = Experiment(workspace=workspace, name=experiment_name)
-    # run_name = 'basemodel'
-    # for i in experiment.get_runs():
-        # how get the endpoint name from the model ID? idk yet
-    endpoint_name = 'basemodel-endpoint'
+
+    for i in experiment.get_runs():
+        if i==m_id:
+            endpoint_name = CONFIG['endpoint_name']
+
     return endpoint_name
 
 def preprocess_input(image, fixed_size=128):
@@ -108,14 +110,13 @@ def predict(df, m_id):
             Columns: i_id (int): The image ID.
                      probs: A list of 10 class probabilities.
     """
-    # Remove this once I can actually access config through import
-    with open("../model_serving/config.yaml", encoding='utf-8') as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
+    CONFIG = load_config()
 
     endpoint_name = get_model_info(m_id)
 
-    scoring_uri = config['scoring_uri'].format(endpoint_name=endpoint_name)
-    api_key = config['api_key']
+    scoring_uri = f'https://{endpoint_name}.westus2.inference.ml.azure.com/score'.format(
+        endpoint_name=endpoint_name)
+    api_key = CONFIG['api_key']
 
     if not api_key:
         raise Exception("A key should be provided to invoke the endpoint")
@@ -131,10 +132,10 @@ def predict(df, m_id):
     json_payload = json.dumps(data_dic, cls=NumpyArrayEncoder)
 
     # The azureml-model-deployment header will force the request to go to a specific deployment.
-    # TODO: figure out how to get 'azureml-model-deployment'
     headers = {'Content-Type':'application/json',
                'Authorization':('Bearer '+ api_key),
-               'azureml-model-deployment': 'pivot-basemodel'}
+               'azureml-model-deployment': CONFIG['deployment_name']}
+
     # Make the prediction request
     response = requests.post(scoring_uri,
                              data=json_payload,
@@ -147,8 +148,9 @@ def predict(df, m_id):
     else:
         print("Prediction request failed with status code:", response.status_code)
         print(response.text)
+
     df = pd.DataFrame({'i_id': df.I_ID.values,
-                         'probs': result})
+                       'probs': result})
     return df
 
 def get_predictions(df, m_id):
@@ -164,10 +166,8 @@ def get_predictions(df, m_id):
     Returns:
         out (list): A list of dictionaries to be inputted into the predictions table.
     """
-    with open("../model_serving/config.yaml", encoding='utf-8') as file:
-        config = yaml.load(file, Loader=yaml.FullLoader)
-
-    df['cloud_urls'] = df.filepath.apply(lambda x: config['cloud_url'].format(filepath=x))
+    cloud_url = 'https://ifcb.blob.core.windows.net/naames/{filepath}'
+    df['cloud_urls'] = df.filepath.apply(lambda x: cloud_url.format(filepath=x))
     preds = predict(df, m_id)
 
     classes = ['Chloro',
@@ -188,3 +188,25 @@ def get_predictions(df, m_id):
     out = preds.to_dict(orient='records')
 
     return out
+
+def load_local_model(json_file_path, h5_file_path):
+    """
+    Loads locally saved model as Tensorflow keras model.
+
+    Parameters:
+        json_file_path (str): Path to local .json model file.
+        h5_file_path (str): Path to local .h5 model weights file.
+
+    Returns:
+        loaded_model (tf.keras.Model): Loaded keras model.
+    """
+    # Load the model architecture from JSON file
+    with open(json_file_path, 'r', encoding="utf-8") as json_file:
+        loaded_model_json = json_file.read()
+
+    loaded_model = model_from_json(loaded_model_json)
+
+    # Load the model weights from H5 file
+    loaded_model.load_weights(h5_file_path)
+
+    return loaded_model
