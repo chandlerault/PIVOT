@@ -20,9 +20,16 @@ CONFIG_ARGS = [
     "server",
     "database",
     "db_user",
-    "db_password"
+    "db_password",
+    'subscription_id',
+    'resource_group',
+    'workspace_name',
+    'experiment_name',
+    'api_key',
+    'model_name',
+    'endpoint_name',
+    'deployment_name'
 ]
-
 
 def load_config(file_path=None, interval=10):
     """
@@ -60,4 +67,3 @@ def load_config(file_path=None, interval=10):
             else:
                 time.sleep(interval)
     return CONFIG
-
