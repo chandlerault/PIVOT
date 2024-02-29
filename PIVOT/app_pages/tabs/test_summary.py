@@ -113,3 +113,44 @@ def main():
                                     )
                     fig.update_layout(title_text='<i><b>Sunburst Plot</b></i>')
                     st.plotly_chart(fig, use_container_width=True)
+                    
+### Aditi
+                class_labels = ["Chloro",
+                "Ciliate",
+                "Crypto",
+                "Diatom",
+                "Dictyo",
+                "Dinoflagellate",
+                "Eugleno",
+                "Other",
+                "Prymnesio",
+                "Unidentifiable"]
+
+                model_preds = pd.read_csv('data/model-summary-cnn-v1-b3.csv')
+                pred_label_counts = model_preds.groupby('pred_label').size().reset_index(name='count')['count'].values
+
+                val_label_counts = validated_df.groupby('PRED_LABEL').size().reset_index(name='count')
+                val_label_counts = [val_label_counts[val_label_counts.PRED_LABEL == label]['count'].values[0] if len(val_label_counts[val_label_counts.PRED_LABEL == label]) > 0 else 0 for label in class_labels]
+
+                stacked_df = pd.DataFrame({'class': class_labels,
+                                           'total': [100 for i in range(10)],
+                                           'val': (val_label_counts/pred_label_counts)*100})
+                
+                custom_colors = ['#0B5699', '#EDF8E6']
+                fig = px.bar(stacked_df,
+                             x='class',
+                             y=['val', 'total'],
+                             color_discrete_sequence=custom_colors)
+                fig.update_layout(title_text='<i><b>Title of Stacked Bar Chart</b></i>')
+
+                st.plotly_chart(fig)
+                
+                custom_colors = ['#0B5699']
+                fig = px.bar(stacked_df,
+                             x='class',
+                             y='val',
+                             color_discrete_sequence=custom_colors)
+                fig.update_layout(title_text='<i><b>Title of Normal Bar Chart</b></i>')
+
+                st.plotly_chart(fig)
+
