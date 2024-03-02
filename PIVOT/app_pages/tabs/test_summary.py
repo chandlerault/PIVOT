@@ -120,7 +120,7 @@ def main():
                                                                         ascending=False)
                         st.plotly_chart(ds.plot_precision_recall_f1(c_report_test),
                                     use_container_width=True)
-                    with two_columns[1]:
+                    with two_columns[1]:                    
                         agg_df = validated_df.groupby(['PRED_LABEL', 'CONSENSUS']).size().reset_index(name='count')
 
                         fig = px.sunburst(agg_df, path=['PRED_LABEL', 'CONSENSUS'], values='count')
