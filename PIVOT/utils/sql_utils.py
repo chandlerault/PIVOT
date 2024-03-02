@@ -316,7 +316,7 @@ def get_train_df(model_id: int, #pylint: disable=too-many-arguments
         ("MODEL_ID", model_id),
         ("D_METRIC_ID", dissimilarity_id),
         ("TRAIN_SIZE", train_size),
-        ("TRAIN_IDS", train_ids)
+        ("IMAGE_IDS", train_ids)
     ])
     # check types
     validate_args("AL_TRAIN_SET", args)
