@@ -13,6 +13,9 @@ import pymssql
 from pandas.testing import assert_frame_equal
 import numpy as np
 import pandas as pd
+import warnings 
+from collections.abc import Iterable
+
 
 
 
@@ -73,11 +76,6 @@ class TestImagesToPredict(unittest.TestCase):
                                                       args=OrderedDict([("MODEL_ID", model_id)]),
                                                       server_args={})
 
-
-class TestGenerateRandomEvaluationSet(unittest.TestCase):
-    """
-    Test case for the insert_data function.
-    """
 
 class TestGetTestSetDf(unittest.TestCase):
     """
@@ -190,10 +188,35 @@ class TestGetLabelRankDf(unittest.TestCase):
                         dissimilarity_id=1,
                         batch_size= 100,
                         random_ratio= -0.5)
-class TestGetTrainDf(unittest.TestCase):
-    """
-    Test cases for getting train df.
-    """
+# class TestGetTrainDf(unittest.TestCase):
+#     """
+#     Test cases for getting train df.
+#     """
+#     @patch('utils.sql_utils.execute_stored_procedure')
+#     @patch('utils.sql_utils.map_probs_column')
+#     def test_basic_functionality(self, mock_class_map, mock_stored_procedure):
+#         """
+#         Basic test case.
+#         """
+#         data = {
+#             'Name': ['Alice', 'Bob'],
+#             'PROBS': [{0:.25, 1:.75}, {0:.85, 1:.15}],
+#             'City': ['New York', 'Los Angeles']
+#         }
+
+#         df = pd.DataFrame(data)
+#         mock_stored_procedure.return_value = df
+#         sp_name = 'MODEL_EVALUATION_MAX_CONSENSUS_FILTERING'
+#         model_id = 1
+#         dissimilarity_id = 1
+#         minimum_percent = .5
+#         mock_class_map.return_value = pd.Series([{"c1":.25, "c2":.75}, {"c1":.85, "c2":.15}])
+#         su.get_train_df(model_id=model_id,
+#                         dissimilarity_id=dissimilarity_id,
+#                     all_classes=['minimum_percent'],
+#                     train_size=100)
+
+#         mock_stored_procedure.assert_called_once()
 
 class TestValidateArgs(unittest.TestCase):
     """
@@ -611,5 +634,169 @@ class TestMapProbsColumn(unittest.TestCase):
         with self.assertRaises(ValueError):
             su.map_probs_column(model_id, 'prob_columns')
 
+class TestGenerateRandomEvaluationSet(unittest.TestCase):
+    """
+    Test generate_random_evaluation_set function.
+    """
+    @patch('utils.sql_utils.execute_stored_procedure')
+    def test_basic_functionality(self, mock_stored_procedure):
+        """
+        Tests basic functionality for random evaluation set generation.
+        """
+        data = {
+            'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Emma'],
+            'Age': [25, 30, 35, 40, 45],
+            'City': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix']
+        }
+
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        mock_stored_procedure.return_value = df
+
+        su.generate_random_evaluation_set()
+        mock_stored_procedure.assert_called_once()
+
+
+    @patch('utils.sql_utils.execute_stored_procedure')
+    def test_value_errors(self, mock_stored_procedure):
+        """
+        Tests basic functionality for random evaluation set generation.
+        """
+        data = {
+            'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Emma'],
+            'Age': [25, 30, 35, 40, 45],
+            'City': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix']
+        }
+
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        mock_stored_procedure.return_value = df
+        with self.assertRaises(ValueError):
+            su.generate_random_evaluation_set(train_ids=4)
+        with self.assertRaises(ValueError):
+            su.generate_random_evaluation_set(train_ids=[4,'5'])
+        with self.assertRaises(ValueError):
+            su.generate_random_evaluation_set(test_size=-100)
+
+    @patch('utils.sql_utils.execute_stored_procedure')
+    @patch('utils.sql_utils.warnings.warn')
+    def test_warning_result(self, mock_warn, mock_stored_procedure):
+        """
+        Tests warnings for generating a random evaluation set.
+        """
+        def warning_side_effect(*args, **kwargs):
+            # List of warning messages
+            warnings_list = [
+                "arguments returned empty",
+                "Second warning message",
+                "Third warning message"
+            ]
+            # Raise each warning in the list
+            for warning_message in warnings_list:
+                warnings.warn(warning_message, UserWarning)
+
+        # Create DataFrame
+        # mock_stored_procedure.return_value = df
+        mock_stored_procedure.side_effect = warning_side_effect
+        su.generate_random_evaluation_set()
+        self.assertEqual(mock_warn.call_count, 3)
+
+    @patch('utils.sql_utils.execute_stored_procedure')
+    def test_return_none(self, mock_stored_procedure):
+        """
+        Tests  functionality for returning a none df.
+        """
+        mock_stored_procedure.return_value = None
+
+        results = su.generate_random_evaluation_set()
+            # Check if the warning was captured
+        self.assertIsNone(results)
+
+class TestUpdateScores(unittest.TestCase):
+    """
+    Tests for the update score function.
+    """
+    @patch('utils.sql_utils.run_sql_query')
+    def test_basic_functionality(self, mock_sql_query):
+        """
+        Tests  functionality for returning a none df.
+        """
+        mock_sql_query.return_value = None
+        self.assertIsNone(su.update_scores(i_ids=[1]))
+        # self.assertIsNotNone(result)
+        mock_sql_query.assert_called_once()
+
+    @patch('utils.sql_utils.run_sql_query')
+    @patch('utils.sql_utils.warnings.warn')
+    def test_warning_result(self, mock_warn, mock_sql_query):
+        """
+        Tests warnings for generating a random evaluation set.
+        """
+        data = {
+            'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Emma'],
+            'Age': [25, 30, 35, 40, 45],
+            'City': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix']
+        }
+
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        mock_sql_query.return_value = df
+        su.update_scores(i_ids=[1])
+        self.assertEqual(mock_warn.call_count, 1)
+
+class TestChunky(unittest.TestCase):
+    """
+    Tests for chunky.
+    """
+    def test_basic_function(self):
+        """
+        Tests the basic functionality of chunky.
+        """
+        result = su.chunky(lst=[1,2,3,4],n=1)
+        self.assertIsInstance(result, Iterable)
+
+        for i in result:
+            self.assertIsInstance(i, list)
+
+class TestDeleteLabelsCleanup(unittest.TestCase):
+    """
+    Tests for deleting labels cleanup
+    """
+    @patch('utils.sql_utils.run_sql_query')
+    @patch('utils.sql_utils.update_scores')
+    def test_basic_functionality(self, mock_update_scores, mock_sql_query):
+        """
+        Tests  functionality for returning a none df.
+        """
+        data = {
+            'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Emma'],
+            'W_COUNT': [25, 30, 35, 40, 45],
+            'I_ID': [9,1,2,3,4]
+        }
+        data2 = {
+            'Name': ['Alice', 'David', 'Emma'],
+            'W_COUNT': [1,  2, 2],
+            'I_ID': [9,3,4]
+        }
+        data3 = {
+            'Name': ['Alice', 'David', 'Emma'],
+            'W_COUNT': [1,  2, 2],
+            'I_ID': [9,3,4]
+        }
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        # Create DataFrame
+        df2 = pd.DataFrame(data2)
+        df3 = pd.DataFrame(data3)
+
+        return_values = [df, df2, df3,None]
+
+        mock_sql_query.side_effect = return_values
+        self.assertIsNone(su.delete_labels_cleanup("fake query"))
+        # self.assertIsNotNone(result)
+        self.assertEqual(mock_sql_query.call_count, 3)
+        self.assertEqual(mock_update_scores.call_count, 5)
+
+    
 if __name__ == '__main__':
     unittest.main()
