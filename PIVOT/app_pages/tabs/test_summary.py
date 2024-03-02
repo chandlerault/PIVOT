@@ -182,6 +182,5 @@ def main():
                          help="""This sunburst plot visualizes the CNN predicted labels
                          (inner circle) and the user verified labels (outer circle). """)                   
                         agg_df = validated_df.groupby(['PRED_LABEL', 'CONSENSUS']).size().reset_index(name='count')
-
                         fig = ds.plot_sunburst(agg_df)
                         st.plotly_chart(fig, use_container_width=True)

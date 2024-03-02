@@ -279,7 +279,6 @@ def plot_sunburst(agg_df):
     fig.update_traces(marker_colors=[
         px.colors.qualitative.Prism[c] for c in pd.factorize(fig.data[0].labels)[0]],
                     leaf_opacity=.8,)
-    fig.update_layout(title_text='<i><b>Sunburst Plot</b></i>')
     
     return fig
 

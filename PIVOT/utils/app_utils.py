@@ -18,6 +18,7 @@ from utils import data_utils
 from utils import sql_utils
 import numpy as np
 import streamlit as st
+import pandas as pd
 
 def create_user(user_info):
     """
@@ -104,7 +105,18 @@ def await_connection(max_time=60, step=5):
     Returns:
         bool: True if connection status is obtained within the specified time, False otherwise.
     """
-    for _ in range(max_time//step):
+    if max_time <= 0:
+        raise ValueError(f"max_time={max_time}, must be > 0.")
+    if step <= 0:
+        raise ValueError(f"step={step}, must be > 0.")
+    if max_time < step:
+        raise ValueError(f"max_time={max_time} and step={step}, step must be less than max_time.")
+    if not isinstance(step, int):
+        raise TypeError(f"step must be an int but got type {type(step)}")
+    if not isinstance(max_time, int):
+        raise TypeError(f"max_time must be an int but got type {type(max_time)}")
+    
+    for _ in range(int(max_time//step)):
         if data_utils.get_status():
             return True
         time.sleep(step)
@@ -121,6 +133,8 @@ def insert_label(df):
     Returns:
         None
     """
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError(f"df must be of type pd.DataFrame, got {type(df)}")
     df['date'] = datetime.now()
     labels = df.to_dict(orient='records')
     data_utils.insert_data('labels', labels)

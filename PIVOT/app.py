@@ -132,9 +132,9 @@ with st.sidebar:
     if example_image == example_options[6]:
         read_example_images('images/phytoplankton/eugleno/*.png')
     if example_image == example_options[7]:
-        st.write("""This category corresponds to images that contain phytoplankton
-                    but the correct category cannot be identified due to blurred or
-                    unclear image quality.""")
+        st.write("""This category corresponds to images that are either phytoplankton
+                    but the category cannot be identified due to blurred or
+                    unclear image quality or images of detritus.""")
     if example_image == example_options[8]:
         read_example_images('images/phytoplankton/pyrmnesio/*.png')
     if example_image == example_options[9]:
