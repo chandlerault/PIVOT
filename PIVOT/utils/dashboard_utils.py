@@ -53,12 +53,6 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.c
     # set up figure 
     fig = ff.create_annotated_heatmap(z, x=list(x), y=list(y), annotation_text=z_text, colorscale='GnBu')
 
-    # add title
-    fig.update_layout(title_text='<i><b>Confusion Matrix</b></i>',
-                    #xaxis = dict(title='x'),
-                    #yaxis = dict(title='x')
-                    )
-
     # add custom xaxis title
     fig.add_annotation(dict(font=dict(color="black",size=14),
                             x=0.5,
@@ -110,7 +104,6 @@ def plot_precision_recall_f1(class_report):
                          y=class_report['f1-score'],
                          name='F1 Score',
                          marker_color='#4cb1d2'))
-    fig.update_layout(title_text='<i><b>Model Performance: Precision, Recall, and F1 Score</b></i>')
 
     return fig
 
@@ -205,7 +198,6 @@ def plot_roc_curve(true_label, prob_label, classes):
     fig.update_layout(
         xaxis_title='False Positive Rate',
         yaxis_title='True Positive Rate',
-        title_text='<i><b>ROC Curve</b></i>',
         margin=dict(t=50, l=100)
         #yaxis=dict(scaleanchor="x", scaleratio=1),
         #xaxis=dict(constrain='domain'),

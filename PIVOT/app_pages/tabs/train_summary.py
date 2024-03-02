@@ -34,8 +34,8 @@ def main():
     
     with st.container(border=True):
 
-        st.markdown("""<h3 style='text-align: left; color: black;'>
-                Train Summary Dashboard</h3>""",
+        st.markdown("""<h2 style='text-align: left; color: black;'>
+                Train Summary Dashboard</h2>""",
                 unsafe_allow_html=True)
         
         st.write("""This interactive dashboard shows the summary performance metrics
@@ -50,38 +50,55 @@ def main():
         
         st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
-        two_columns = st.columns([.75,5])
-        with two_columns[0]:
+        three_columns = st.columns([.75,2.5,2.5])
+        with three_columns[0]:
+            st.subheader("Metrics")
             st.metric("Accuracy:", f"{model_stats[0]*100:.2f} %")
             st.metric("Precision:", f"{model_stats[1]*100:.2f} %")
             st.metric("Recall:", f"{model_stats[2]*100:.2f} %")
             st.metric("Images Validated:", f"{len(model_pred)}")
 
-        with two_columns[1]:
-            if model_pred.empty:
-                st.error("Please select at LEAST one phytoplankton to view.")
-            else:
-                nested_two_columns = st.columns(2)
-                with nested_two_columns[0]:
-                    st.plotly_chart(ds.plot_confusion_matrix(model_pred,
-                                                    ['true_label', 'pred_label'],
-                                                    classes=class_labels,
-                                                    normalize=True), use_container_width=True)
-                    c_report = ds.get_classification_report(model_pred,
-                                                            ['true_label','pred_label'],
-                                                            class_names = class_labels)
+        with three_columns[1]:
+            st.subheader("Confusion Matrix", 
+                         help="""A confusion matrix is a tabular representation that
+                         summarizes the effectiveness of a machine learning model
+                         when tested against a dataset. It provides a visual breakdown
+                         of correct and incorrect predictions made by the model.""")
+            st.plotly_chart(ds.plot_confusion_matrix(model_pred,
+                                            ['true_label', 'pred_label'],
+                                            classes=class_labels,
+                                            normalize=True), use_container_width=True)
+            c_report = ds.get_classification_report(model_pred,
+                                                    ['true_label','pred_label'],
+                                                    class_names = class_labels)
 
-                with nested_two_columns[1]:
-                    st.plotly_chart(ds.plot_roc_curve(model_pred['true_label'],
-                                                    model_pred.iloc[:, 5:15], 
-                                                    class_labels), use_container_width=True)
+        with three_columns[2]:
+            st.subheader("ROC Curve",
+                         help="""An ROC (Receiver Operating Characteristic) curve,
+                         illustrates how well a classification model performs across
+                         various classification thresholds. It showcases two key
+                         parameters: True Positive Rate and False Positive Rate.
+                         The curve plots the relationship between TPR and FPR as the
+                         classification threshold changes. Lowering the threshold
+                         identifies more items as positive, leading to an increase in
+                         both False Positives and True Positives.""")
+            st.plotly_chart(ds.plot_roc_curve(model_pred['true_label'],
+                                            model_pred.iloc[:, 5:15], 
+                                            class_labels), use_container_width=True)
                     
         two_columns = st.columns([4,3])
         with two_columns[0]:
+            st.subheader("Model Performance: Precision, Recall, F1 Score", 
+                         help="""Precision is the actual correct prediction divided by total
+                        prediction made by model. Recall is the number of true positives
+                        divided by the total number of true positives and false
+                        negatives. F1 Score is the weighted average of precision and
+                        recall.""")
             c_report = c_report.sort_values(by=['f1-score'], ascending=False)
             st.plotly_chart(ds.plot_precision_recall_f1(c_report),
                             use_container_width=True)
         with two_columns[1]:
+            st.subheader("Class Distribution")
             fig = px.bar(group_count,
                      x='true_label',
                      y=group_count.index,
