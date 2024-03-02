@@ -4,6 +4,7 @@ and provides a example phytoplankton images and references through a dropdown.
 
 """
 import os
+import glob
 import streamlit as st
 from streamlit_option_menu import option_menu
 from PIL import Image
@@ -13,6 +14,11 @@ from app_pages import dashboard
 from app_pages import resources
 from app_pages import about
 from app_pages import config_file
+
+def read_example_images(file_path):
+    for filename in glob.glob(file_path):
+            image = Image.open(filename)
+            st.image(image)
 
 # Set current working directory to .
 cwd = os.getcwd()
@@ -78,10 +84,16 @@ with st.sidebar:
                 Links to relavent GitHub repositories:</h5>""",
                 unsafe_allow_html=True)
 
-    URL_STRING_GITHUB = "https://github.com/ifcb-utopia"
+    URL_UTOPIA_GITHUB = "https://github.com/ifcb-utopia"
     st.markdown(
         # pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
-        f'<a href="{URL_STRING_GITHUB}" style="display: inline-block; width: 100%; padding-top: 5px; padding-bottom: 5px; background-color: #51bfff; font-weight: bold; color: black; text-align: center; border-radius: 4px;">ifcb-utopia \N{ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS}</a>',
+        f'<a href="{URL_UTOPIA_GITHUB}" style="display: inline-block; width: 100%; padding-top: 5px; padding-bottom: 5px; background-color: #51bfff; font-weight: bold; color: black; text-align: center; border-radius: 4px;">ifcb-utopia \N{ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS}</a>',
+        unsafe_allow_html=True)
+    
+    URL_PIVOT_GITHUB = "https://github.com/chandlerault/PIVOT"
+    st.markdown(
+        # pylint: disable=locally-disabled, multiple-statements, fixme, line-too-long
+        f'<a href="{URL_PIVOT_GITHUB}" style="display: inline-block; width: 100%; padding-top: 5px; padding-bottom: 5px; background-color: #51bfff; font-weight: bold; color: black; text-align: center; border-radius: 4px;">PIVOT \N{ARROW POINTING RIGHTWARDS THEN CURVING UPWARDS}</a>',
         unsafe_allow_html=True)
 
     st.markdown("""<p style='text-align: left; color: white;'>
@@ -106,8 +118,27 @@ with st.sidebar:
                                 label='examples',
                                 index=None)
     if example_image == example_options[0]:
-        st.write('Images HERE')
-        st.write('Button to links HERE')
+        read_example_images('images/phytoplankton/chloro/*.png')
+    elif example_image == example_options[1]:
+        read_example_images('images/phytoplankton/ciliates/*.png')
+    elif example_image == example_options[2]:
+        read_example_images('images/phytoplankton/crypto/*.png')
+    if example_image == example_options[3]:
+        read_example_images('images/phytoplankton/diatoms/*.png')
+    if example_image == example_options[4]:
+        read_example_images('images/phytoplankton/dictyo/*.png')
+    if example_image == example_options[5]:
+        read_example_images('images/phytoplankton/dinoflagellates/*.png')
+    if example_image == example_options[6]:
+        read_example_images('images/phytoplankton/eugleno/*.png')
+    if example_image == example_options[7]:
+        st.write("""This category corresponds to images that contain phytoplankton
+                    but the correct category cannot be identified due to blurred or
+                    unclear image quality.""")
+    if example_image == example_options[8]:
+        read_example_images('images/phytoplankton/pyrmnesio/*.png')
+    if example_image == example_options[9]:
+        read_example_images('images/phytoplankton/other/*.png')
 
 # Run specific app_page scrip when a page is selected from nav sidebar
 if selected == "Image Validation":
