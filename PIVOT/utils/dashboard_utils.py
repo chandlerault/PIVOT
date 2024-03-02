@@ -79,6 +79,7 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.c
     fig['data'][0]['showscale'] = True
     return fig
 
+@st.cache_data(ttl=500)
 def plot_precision_recall_f1(class_report):
     """
     This function plots a bar graph of a models precision and recall by class.
@@ -106,6 +107,7 @@ def plot_precision_recall_f1(class_report):
 
     return fig
 
+@st.cache_data(ttl=500)
 def get_classification_report(model_df, col_names, class_names = None):
     """
     This function gets the classification report and converts it in to a Pandas
@@ -136,6 +138,7 @@ def get_classification_report(model_df, col_names, class_names = None):
 
     return c_report
 
+@st.cache_data(ttl=500)
 def get_acc_prec_recall(model_df, col_names):
     """
     This function calculates the accuracy, precision, and recall of a classified model.
