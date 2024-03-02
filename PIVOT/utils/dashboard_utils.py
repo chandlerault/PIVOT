@@ -204,3 +204,81 @@ def plot_roc_curve(true_label, prob_label, classes):
         #width=700, height=500
     )
     return fig
+
+@st.cache_data(ttl=500)
+def target_plot(count_df, target):
+    """
+    Plots the number of images labeled for each class in comparison to a user-inputted target threshold.
+    
+    Parameters:
+        count_df (pd.DataFrame): Dataframe with the number of images labeled per class.
+        target (int): The target number of images to be labeled for each class.
+    
+    Returns:
+        fig: a Plotly express bar chart.
+    """
+    count_df['remaining'] = target - count_df['# Images Labeled']
+    count_df['color'] = ['red' if i > 0 else 'green' for i in count_df['remaining']]
+    color_seq = {'red': 'red', 'green':'green'}
+    count_df.loc[count_df['remaining'] < 0, 'remaining'] = 0
+    fig = px.bar(count_df,
+                 x='class',
+                 y='# Images Labeled',
+                 labels={'remaining': 'Remaining Images'},
+                 color='color',
+                 color_discrete_map=color_seq)
+
+    hover_template = ("<b>%{x}</b><br>"
+                      "Labeled: %{y}<br>"
+                      "Remaining: %{customdata}<br>"
+                      "<extra></extra>")
+
+    fig.update_traces(hovertemplate=hover_template,
+                      customdata=count_df['remaining'],
+                      showlegend=False)
+
+    fig.add_hline(y=target,
+                  line_dash="dash",
+                  annotation_text=f'Target: {target}',
+                  annotation_position="top left")
+
+    fig.add_trace(go.Bar(x=count_df['class'],
+                         y=target - count_df['# Images Labeled'],
+                         base=count_df['# Images Labeled'],
+                         customdata=count_df['remaining'],
+                         marker=dict(color='rgba(255, 0, 0, 0.1)'),
+                         showlegend=False, 
+                         hovertemplate= ("<b>%{x}</b><br>"
+                                          "Remaining: %{customdata}<br>"
+                                          "<extra></extra>")))
+
+    fig.update_layout(title_text=f'<i><b>Number of Images Labeled per Class (Target: {target} images)',
+                      xaxis_title="Class",
+                      yaxis_title="# Images Labeled",
+                      hovermode='closest')
+
+    return fig
+
+def class_proportion_plot(percent_df):
+    """
+    """
+    custom_colors = ['#1B7AB5']
+    fig = px.bar(percent_df,
+                 x='class',
+                 y='% Images Labeled',
+                 color_discrete_sequence=custom_colors)
+    fig.update_layout(title_text='<i><b>Proportion of Validated Images</b></i>')
+    
+    return fig
+
+@st.cache_data(ttl=500)
+def plot_sunburst(agg_df):
+    """
+    """
+    fig = px.sunburst(agg_df, path=['PRED_LABEL', 'CONSENSUS'], values='count')
+    fig.update_traces(marker_colors=[
+        px.colors.qualitative.Prism[c] for c in pd.factorize(fig.data[0].labels)[0]],
+                    leaf_opacity=.8,)
+    
+    return fig
+

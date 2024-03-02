@@ -94,53 +94,12 @@ def main():
                         count_df = pd.DataFrame({'class': class_labels,
                                                  '# Images Labeled': val_label_counts})
 
-                        def update_plot(count_df, target):
-                            count_df['remaining'] = target - count_df['# Images Labeled']
-                            count_df['color'] = ['red' if i > 0 else 'green' for i in count_df['remaining']]
-                            color_seq = {'red': 'red', 'green':'green'}
-                            count_df.loc[count_df['remaining'] < 0, 'remaining'] = 0
-                            fig = px.bar(count_df,
-                                         x='class',
-                                         y='# Images Labeled',
-                                         labels={'remaining': 'Remaining Images'},
-                                         color='color',
-                                         color_discrete_map=color_seq)
-
-                            hover_template = ("<b>%{x}</b><br>"
-                                              "Labeled: %{y}<br>"
-                                              "Remaining: %{customdata}<br>"
-                                              "<extra></extra>")
-
-                            fig.update_traces(hovertemplate=hover_template,
-                                              customdata=count_df['remaining'],
-                                              showlegend=False)
-
-                            fig.add_hline(y=target,
-                                          line_dash="dash",
-                                          annotation_text=f'Target: {target}',
-                                          annotation_position="top left")
-
-                            fig.add_trace(go.Bar(x=count_df['class'],
-                                                 y=target - count_df['# Images Labeled'],
-                                                 base=count_df['# Images Labeled'],
-                                                 customdata=count_df['remaining'],
-                                                 marker=dict(color='rgba(255, 0, 0, 0.1)'),
-                                                 showlegend=False, 
-                                                 hovertemplate= ("<b>%{x}</b><br>"
-                                                                  "Remaining: %{customdata}<br>"
-                                                                  "<extra></extra>")))
-
-                            fig.update_layout(title_text=f'<i><b>Number of Images Labeled per Class (Target: {target} images)',
-                                              xaxis_title="Class",
-                                              yaxis_title="# Images Labeled",
-                                              hovermode='closest')
-
-                            return fig
                         three_columns = st.columns([5, .2, 5])
+
                         with three_columns[0]:
                             target_options = [50, 100, 1000, 10000]
                             target = st.selectbox("Select the target number of images labeled per class:", options=target_options, index=0)
-                            fig = update_plot(count_df, target)
+                            fig = ds.target_plot(count_df, target)
                             st.plotly_chart(fig, use_container_width=True)
 
                         with three_columns[2]:
@@ -148,12 +107,7 @@ def main():
                             st.markdown('###')
                             st.markdown('###')
                             custom_colors = ['#0B5699', '#EDF8E6']
-                            fig = px.bar(percent_df,
-                                         x='class',
-                                         y='% Images Labeled',
-                                         color_discrete_sequence=custom_colors)
-                            fig.update_layout(title_text='<i><b>Proportion of Validated Images</b></i>')
-
+                            fig = ds.class_proportion_plot(percent_df)
                             st.plotly_chart(fig, use_container_width=True)
 
                     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
@@ -166,10 +120,10 @@ def main():
                                                         'PRED_LABEL'])
 
                     model_stats = ds.get_acc_prec_recall(
-                        pd.read_csv('data/model-summary-cnn-v1-b3.csv'),
-                        ['is_correct',
-                        'true_label',
-                        'pred_label'])
+                                    pd.read_csv('data/model-summary-cnn-v1-b3.csv'),
+                                    ['is_correct',
+                                    'true_label',
+                                    'pred_label'])
 
                     three_columns = st.columns([.75,2.5,2.5])
                     with three_columns[0]:
@@ -228,11 +182,5 @@ def main():
                          help="""This sunburst plot visualizes the CNN predicted labels
                          (inner circle) and the user verified labels (outer circle). """)                   
                         agg_df = validated_df.groupby(['PRED_LABEL', 'CONSENSUS']).size().reset_index(name='count')
-
-                        fig = px.sunburst(agg_df, path=['PRED_LABEL', 'CONSENSUS'], values='count')
-                        fig.update_traces(marker_colors=[
-                                                px.colors.qualitative.Prism[c] for c in pd.factorize(fig.data[0].labels)[0]
-                                            ],
-                                            leaf_opacity=.8)
-                        fig.update_layout(title_text='<i><b>Sunburst Plot</b></i>')
+                        fig = ds.plot_sunburst(agg_df)
                         st.plotly_chart(fig, use_container_width=True)
