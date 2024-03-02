@@ -166,8 +166,17 @@ def get_acc_prec_recall(model_df, col_names):
     return (accuracy, precision, recall)
 
 def plot_roc_curve(true_label, prob_label, classes):
+            
     # One hot encode the labels in order to plot them
     y_onehot = pd.get_dummies(true_label, columns=classes)
+
+    if len(prob_label.columns) != len(classes):
+        columns_not_in_list = [col for col in prob_label.columns if col not in classes]
+        missing_columns_df = pd.DataFrame(0,
+                                          index=y_onehot.index,
+                                          columns=columns_not_in_list)
+        y_onehot = pd.concat([y_onehot, missing_columns_df], axis=1)
+        y_onehot = y_onehot.reindex(sorted(y_onehot.columns), axis=1)
 
     # Create an empty figure, and iteratively add new lines
     # every time we compute a new class
@@ -177,15 +186,18 @@ def plot_roc_curve(true_label, prob_label, classes):
         x0=0, x1=1, y0=0, y1=1
     )
 
+    count = 0
     for i in range(prob_label.shape[1]):
         y_true = y_onehot.iloc[:, i]
         y_score = prob_label.iloc[:, i]
 
-        fpr, tpr, _ = roc_curve(y_true, y_score)
-        auc_score = roc_auc_score(y_true, y_score)
+        if sum(y_true.values) != 0:
+            fpr, tpr, _ = roc_curve(y_true, y_score)
+            auc_score = roc_auc_score(y_true, y_score)
 
-        name = f"{classes[i]} (AUC={auc_score:.2f})"
-        fig.add_trace(go.Scatter(x=fpr, y=tpr, name=name, mode='lines'))
+            name = f"{classes[count]} (AUC={auc_score:.2f})"
+            fig.add_trace(go.Scatter(x=fpr, y=tpr, name=name, mode='lines'))
+            count = count +1
 
     fig.update_layout(
         xaxis_title='False Positive Rate',
