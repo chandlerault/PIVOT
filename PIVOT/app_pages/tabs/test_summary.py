@@ -56,8 +56,8 @@ def main():
 
                 with st.container(border=True):
 
-                    st.markdown("""<h3 style='text-align: left; color: black;'>
-                            Test Summary Dashboard</h3>""",
+                    st.markdown("""<h2 style='text-align: left; color: black;'>
+                            Test Summary Dashboard</h2>""",
                             unsafe_allow_html=True)
                     
                     st.write("""This interactive dashboard shows the summary performance
@@ -86,8 +86,9 @@ def main():
                         'true_label',
                         'pred_label'])
 
-                    two_columns = st.columns([.75,5])
-                    with two_columns[0]:
+                    three_columns = st.columns([.75,2.5,2.5])
+                    with three_columns[0]:
+                        st.subheader("Metrics")
                         st.metric("Accuracy:",
                                     f"{val_stats[0]*100:.2f} %",
                                     delta=f"{(val_stats[0] - model_stats[0])*100:.2f} %")
@@ -98,29 +99,49 @@ def main():
                                     f"{val_stats[2]*100:.2f} %",
                                     delta=f"{(val_stats[2] - model_stats[2])*100:.2f} %")
 
-                    with two_columns[1]:
-                        nested_two_columns = st.columns(2)
-                        with nested_two_columns[0]:
-                            c_report_test = ds.get_classification_report(
-                                            validated_df,
-                                            ['CONSENSUS', 'PRED_LABEL', None])
-
-                            st.plotly_chart(ds.plot_confusion_matrix(validated_df,
-                                                ['CONSENSUS', 'PRED_LABEL'],
-                                                classes=c_report_test.index,
-                                                normalize=True), use_container_width=True)
-                        with nested_two_columns[1]:
-                            st.plotly_chart(ds.plot_roc_curve(validated_df['CONSENSUS'],
-                                            pd.DataFrame(validated_df['PROBS'].tolist()), 
-                                            c_report_test.index.sort_values(ascending=True)),
-                                            use_container_width=True)
+                    with three_columns[1]:
+                        st.subheader("Confusion Matrix", 
+                         help="""A confusion matrix is a tabular representation that
+                         summarizes the effectiveness of a machine learning model
+                         when tested against a dataset. It provides a visual breakdown
+                         of correct and incorrect predictions made by the model.""")
+                        c_report_test = ds.get_classification_report(
+                                        validated_df,
+                                        ['CONSENSUS', 'PRED_LABEL', None])
+                        st.plotly_chart(ds.plot_confusion_matrix(validated_df,
+                                            ['CONSENSUS', 'PRED_LABEL'],
+                                            classes=c_report_test.index,
+                                            normalize=True), use_container_width=True)
+                    with three_columns[2]:
+                        st.subheader("ROC Curve",
+                         help="""An ROC (Receiver Operating Characteristic) curve,
+                         illustrates how well a classification model performs across
+                         various classification thresholds. It showcases two key
+                         parameters: True Positive Rate and False Positive Rate.
+                         The curve plots the relationship between TPR and FPR as the
+                         classification threshold changes. Lowering the threshold
+                         identifies more items as positive, leading to an increase in
+                         both False Positives and True Positives.""")
+                        st.plotly_chart(ds.plot_roc_curve(validated_df['CONSENSUS'],
+                                        pd.DataFrame(validated_df['PROBS'].tolist()), 
+                                        c_report_test.index.sort_values(ascending=True)),
+                                        use_container_width=True)
                     two_columns = st.columns([4,3])
                     with two_columns[0]:
+                        st.subheader("Model Performance: Precision, Recall, F1 Score", 
+                         help="""Precision is the actual correct prediction divided by total
+                        prediction made by model. Recall is the number of true positives
+                        divided by the total number of true positives and false
+                        negatives. F1 Score is the weighted average of precision and
+                        recall.""")
                         c_report_test = c_report_test.sort_values(by=['f1-score'],
                                                                         ascending=False)
                         st.plotly_chart(ds.plot_precision_recall_f1(c_report_test),
                                     use_container_width=True)
-                    with two_columns[1]:                    
+                    with two_columns[1]:
+                        st.subheader("Sunburst Plot", 
+                         help="""This sunburst plot visualizes the CNN predicted labels
+                         (inner circle) and the user verified labels (outer circle). """)                   
                         agg_df = validated_df.groupby(['PRED_LABEL', 'CONSENSUS']).size().reset_index(name='count')
 
                         fig = px.sunburst(agg_df, path=['PRED_LABEL', 'CONSENSUS'], values='count')

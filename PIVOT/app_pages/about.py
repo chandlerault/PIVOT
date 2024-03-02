@@ -47,15 +47,16 @@ def main():
                 unsafe_allow_html=True)
 
     # Center system diagram image and display system diagram description
+
+    st.markdown("""<h4 style='text-align: center; color: black;'>
+                System Diagram</h4>""",
+                unsafe_allow_html=True)
+
     left_1, middle_1, right_1 = st.columns([2,3,2])
     with middle_1:
         st.image("images/SYS.svg")
     with left_1 and right_1:
         pass
-
-    st.markdown("""<h4 style='text-align: center; color: black;'>
-                System Diagram</h4>""",
-                unsafe_allow_html=True)
 
     st.write("""The PIVOT App works as a user interface for researcher to label and review
              summary statistics for CNN-labeled image validation. The Image Validation and
@@ -75,15 +76,16 @@ def main():
              . These metrics are saved to the SQL Database as well.""")
 
     # Center system diagram image and display image validation flow diagram description
+
+    st.markdown("""<h4 style='text-align: center; color: black;'>
+                Image Validation Flow Diagram</h4>""",
+                unsafe_allow_html=True)
+
     left_2, middle_2, right_2 = st.columns([1,5,1])
     with middle_2:
         st.image("images/IV.svg")
     with left_2 and right_2:
         pass
-
-    st.markdown("""<h4 style='text-align: center; color: black;'>
-                Image Validation Flow Diagram</h4>""",
-                unsafe_allow_html=True)
 
     st.write("""The Image Validation Flow Diagram visualizes the sequence of events when
              using the image validation tool. Items in blue represent tasks completed by
@@ -98,15 +100,16 @@ def main():
              Database.""")
 
     # Center system diagram image and display ER diagram description
+
+    st.markdown("""<h4 style='text-align: center; color: black;'>
+                Entity Relationship (ER) Diagram</h4>""",
+                unsafe_allow_html=True)
+
     left_3, middle_3, right_3 = st.columns([1,6,1])
     with middle_3:
         st.image("images/ER.svg")
     with left_3 and right_3:
         pass
-
-    st.markdown("""<h4 style='text-align: center; color: black;'>
-                Entity Relationship (ER) Diagram</h4>""",
-                unsafe_allow_html=True)
 
     st.write("""The diagram above visualizes the relationships between all tables in
              the SQL Database. For a full description of all variables saved to the
