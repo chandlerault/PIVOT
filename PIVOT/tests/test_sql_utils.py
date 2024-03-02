@@ -188,35 +188,73 @@ class TestGetLabelRankDf(unittest.TestCase):
                         dissimilarity_id=1,
                         batch_size= 100,
                         random_ratio= -0.5)
-# class TestGetTrainDf(unittest.TestCase):
-#     """
-#     Test cases for getting train df.
-#     """
-#     @patch('utils.sql_utils.execute_stored_procedure')
-#     @patch('utils.sql_utils.map_probs_column')
-#     def test_basic_functionality(self, mock_class_map, mock_stored_procedure):
-#         """
-#         Basic test case.
-#         """
-#         data = {
-#             'Name': ['Alice', 'Bob'],
-#             'PROBS': [{0:.25, 1:.75}, {0:.85, 1:.15}],
-#             'City': ['New York', 'Los Angeles']
-#         }
+class TestGetTrainDf(unittest.TestCase):
+    """
+    Test cases for getting train df.
+    """
+    @patch('utils.sql_utils.execute_stored_procedure')
+    @patch('utils.sql_utils.map_probs_column')
+    def test_basic_functionality(self, mock_class_map, mock_stored_procedure):
+        """
+        Basic test case.
+        """
+        data = {
+            'ALL_LABELS': ['Alice', 'Bob'],
+            'PROBS': [{0:.25, 1:.75}, {0:.85, 1:.15}],
+            'Labels': ['.3, .4', '1.0, 3.4'],
+            'PercentConsensus':['.3, .5','.1, .9']
+        }
 
-#         df = pd.DataFrame(data)
-#         mock_stored_procedure.return_value = df
-#         sp_name = 'MODEL_EVALUATION_MAX_CONSENSUS_FILTERING'
-#         model_id = 1
-#         dissimilarity_id = 1
-#         minimum_percent = .5
-#         mock_class_map.return_value = pd.Series([{"c1":.25, "c2":.75}, {"c1":.85, "c2":.15}])
-#         su.get_train_df(model_id=model_id,
-#                         dissimilarity_id=dissimilarity_id,
-#                     all_classes=['minimum_percent'],
-#                     train_size=100)
+        df = pd.DataFrame(data)
+        mock_stored_procedure.return_value = df
+        model_id = 1
+        dissimilarity_id = 1
+        mock_class_map.return_value = pd.Series([{"c1":.25, "c2":.75}, {"c1":.85, "c2":.15}])
+        su.get_train_df(model_id=model_id,
+                        dissimilarity_id=dissimilarity_id,
+                    all_classes=['minimum_percent'],
+                    train_size=100)
 
-#         mock_stored_procedure.assert_called_once()
+        mock_stored_procedure.assert_called_once()
+
+    @patch('utils.sql_utils.execute_stored_procedure')
+    @patch('utils.sql_utils.map_probs_column')
+    def test_value_errors(self, mock_class_map, mock_stored_procedure):
+        """
+        Basic for error throwing.
+        """
+        data = {
+            'ALL_LABELS': ['Alice', 'Bob'],
+            'PROBS': [{0:.25, 1:.75}, {0:.85, 1:.15}],
+            'Labels': ['.3, .4', '1.0, 3.4'],
+            'PercentConsensus':['.3, .5','.1, .9']
+        }
+
+        df = pd.DataFrame(data)
+        mock_stored_procedure.return_value = df
+        model_id = 1
+        dissimilarity_id = 1
+        mock_class_map.return_value = pd.Series([{"c1":.25, "c2":.75}, {"c1":.85, "c2":.15}])
+        with self.assertRaises(ValueError):
+            su.get_train_df(model_id=model_id,
+                        dissimilarity_id=dissimilarity_id,
+                        all_classes=['minimum_percent'],
+                        train_size=0)
+
+        with self.assertRaises(ValueError):
+            su.get_train_df(model_id=model_id,
+                        dissimilarity_id=dissimilarity_id,
+                        all_classes=['minimum_percent'],
+                        train_ids=['1',2],
+                        train_size=0)
+
+        with self.assertRaises(ValueError):
+            su.get_train_df(model_id=model_id,
+                        dissimilarity_id=dissimilarity_id,
+                        all_classes=['minimum_percent'],
+                        train_ids=1,
+                        train_size=0)
+
 
 class TestValidateArgs(unittest.TestCase):
     """
