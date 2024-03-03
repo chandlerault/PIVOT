@@ -141,7 +141,7 @@ def generate_random_evaluation_set(test_size: int = 100000,
         return df
     return None
 
-
+@st.cache_data(show_spinner='Loading data...')
 def get_test_set_df(model_id: int,
                     minimum_percent: Optional[float] = 0.0,
                     sp_name: Optional[str] = 'MODEL_EVALUATION_MAX_CONSENSUS_FILTERING',

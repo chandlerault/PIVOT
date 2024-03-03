@@ -22,6 +22,8 @@ def main():
 
     st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
+    st.empty()
+
     tab_1, tab_2 = st.tabs(['Train Summary', 'Test Summary'])
     with tab_1:
         train_summary.main()

@@ -53,12 +53,6 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.c
     # set up figure 
     fig = ff.create_annotated_heatmap(z, x=list(x), y=list(y), annotation_text=z_text, colorscale='GnBu')
 
-    # add title
-    fig.update_layout(title_text='<i><b>Confusion Matrix</b></i>',
-                    #xaxis = dict(title='x'),
-                    #yaxis = dict(title='x')
-                    )
-
     # add custom xaxis title
     fig.add_annotation(dict(font=dict(color="black",size=14),
                             x=0.5,
@@ -85,6 +79,7 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.c
     fig['data'][0]['showscale'] = True
     return fig
 
+@st.cache_data(ttl=500)
 def plot_precision_recall_f1(class_report):
     """
     This function plots a bar graph of a models precision and recall by class.
@@ -109,10 +104,10 @@ def plot_precision_recall_f1(class_report):
                          y=class_report['f1-score'],
                          name='F1 Score',
                          marker_color='#4cb1d2'))
-    fig.update_layout(title_text='<i><b>Model Performance: Precision, Recall, and F1 Score</b></i>')
 
     return fig
 
+@st.cache_data(ttl=500)
 def get_classification_report(model_df, col_names, class_names = None):
     """
     This function gets the classification report and converts it in to a Pandas
@@ -143,6 +138,7 @@ def get_classification_report(model_df, col_names, class_names = None):
 
     return c_report
 
+@st.cache_data(ttl=500)
 def get_acc_prec_recall(model_df, col_names):
     """
     This function calculates the accuracy, precision, and recall of a classified model.
@@ -166,8 +162,17 @@ def get_acc_prec_recall(model_df, col_names):
     return (accuracy, precision, recall)
 
 def plot_roc_curve(true_label, prob_label, classes):
+            
     # One hot encode the labels in order to plot them
     y_onehot = pd.get_dummies(true_label, columns=classes)
+
+    if len(prob_label.columns) != len(classes):
+        columns_not_in_list = [col for col in prob_label.columns if col not in classes]
+        missing_columns_df = pd.DataFrame(0,
+                                          index=y_onehot.index,
+                                          columns=columns_not_in_list)
+        y_onehot = pd.concat([y_onehot, missing_columns_df], axis=1)
+        y_onehot = y_onehot.reindex(sorted(y_onehot.columns), axis=1)
 
     # Create an empty figure, and iteratively add new lines
     # every time we compute a new class
@@ -177,23 +182,103 @@ def plot_roc_curve(true_label, prob_label, classes):
         x0=0, x1=1, y0=0, y1=1
     )
 
+    count = 0
     for i in range(prob_label.shape[1]):
         y_true = y_onehot.iloc[:, i]
         y_score = prob_label.iloc[:, i]
 
-        fpr, tpr, _ = roc_curve(y_true, y_score)
-        auc_score = roc_auc_score(y_true, y_score)
+        if sum(y_true.values) != 0:
+            fpr, tpr, _ = roc_curve(y_true, y_score)
+            auc_score = roc_auc_score(y_true, y_score)
 
-        name = f"{classes[i]} (AUC={auc_score:.2f})"
-        fig.add_trace(go.Scatter(x=fpr, y=tpr, name=name, mode='lines'))
+            name = f"{classes[count]} (AUC={auc_score:.2f})"
+            fig.add_trace(go.Scatter(x=fpr, y=tpr, name=name, mode='lines'))
+            count = count +1
 
     fig.update_layout(
         xaxis_title='False Positive Rate',
         yaxis_title='True Positive Rate',
-        title_text='<i><b>ROC Curve</b></i>',
         margin=dict(t=50, l=100)
         #yaxis=dict(scaleanchor="x", scaleratio=1),
         #xaxis=dict(constrain='domain'),
         #width=700, height=500
     )
     return fig
+
+@st.cache_data(ttl=500)
+def target_plot(count_df, target):
+    """
+    Plots the number of images labeled for each class in comparison to a user-inputted target threshold.
+    
+    Parameters:
+        count_df (pd.DataFrame): Dataframe with the number of images labeled per class.
+        target (int): The target number of images to be labeled for each class.
+    
+    Returns:
+        fig: a Plotly express bar chart.
+    """
+    count_df['remaining'] = target - count_df['# Images Labeled']
+    count_df['color'] = ['red' if i > 0 else 'green' for i in count_df['remaining']]
+    color_seq = {'red': 'red', 'green':'green'}
+    count_df.loc[count_df['remaining'] < 0, 'remaining'] = 0
+    fig = px.bar(count_df,
+                 x='class',
+                 y='# Images Labeled',
+                 labels={'remaining': 'Remaining Images'},
+                 color='color',
+                 color_discrete_map=color_seq)
+
+    hover_template = ("<b>%{x}</b><br>"
+                      "Labeled: %{y}<br>"
+                      "Remaining: %{customdata}<br>"
+                      "<extra></extra>")
+
+    fig.update_traces(hovertemplate=hover_template,
+                      customdata=count_df['remaining'],
+                      showlegend=False)
+
+    fig.add_hline(y=target,
+                  line_dash="dash",
+                  annotation_text=f'Target: {target}',
+                  annotation_position="top left")
+
+    fig.add_trace(go.Bar(x=count_df['class'],
+                         y=target - count_df['# Images Labeled'],
+                         base=count_df['# Images Labeled'],
+                         customdata=count_df['remaining'],
+                         marker=dict(color='rgba(255, 0, 0, 0.1)'),
+                         showlegend=False, 
+                         hovertemplate= ("<b>%{x}</b><br>"
+                                          "Remaining: %{customdata}<br>"
+                                          "<extra></extra>")))
+
+    fig.update_layout(title_text=f'<i><b>Number of Images Labeled per Class (Target: {target} images)',
+                      xaxis_title="Class",
+                      yaxis_title="# Images Labeled",
+                      hovermode='closest')
+
+    return fig
+
+def class_proportion_plot(percent_df):
+    """
+    """
+    custom_colors = ['#1B7AB5']
+    fig = px.bar(percent_df,
+                 x='class',
+                 y='% Images Labeled',
+                 color_discrete_sequence=custom_colors)
+    fig.update_layout(title_text='<i><b>Proportion of Validated Images</b></i>')
+    
+    return fig
+
+@st.cache_data(ttl=500)
+def plot_sunburst(agg_df):
+    """
+    """
+    fig = px.sunburst(agg_df, path=['PRED_LABEL', 'CONSENSUS'], values='count')
+    fig.update_traces(marker_colors=[
+        px.colors.qualitative.Prism[c] for c in pd.factorize(fig.data[0].labels)[0]],
+                    leaf_opacity=.8,)
+    
+    return fig
+
