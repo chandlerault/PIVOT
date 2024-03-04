@@ -188,6 +188,28 @@ class TestGetLabelRankDf(unittest.TestCase):
                         dissimilarity_id=1,
                         batch_size= 100,
                         random_ratio= -0.5)
+
+        with self.assertRaises(ValueError):
+            su.get_label_rank_df(model_id=1,
+                        dissimilarity_id=1,
+                        batch_size= -100,
+                        random_ratio= 0.5)
+
+        mock_stored_procedure.side_effect = [None, None]
+        with self.assertRaises(ValueError):
+            with self.assertWarns(UserWarning):
+                su.get_label_rank_df(model_id=1,
+                            dissimilarity_id=1,
+                            batch_size= 100,
+                            random_ratio= .1)
+                
+        mock_stored_procedure.side_effect = [None, None]
+        with self.assertRaises(ValueError):
+            with self.assertWarns(UserWarning):
+                su.get_label_rank_df(model_id=1,
+                            dissimilarity_id=1,
+                            batch_size= 100,
+                            random_ratio= 1)
 class TestGetTrainDf(unittest.TestCase):
     """
     Test cases for getting train df.
@@ -390,7 +412,8 @@ class TestExecuteStoredProcedure(unittest.TestCase):
         mock_cursor.execute.return_value = None
         mock_cursor.callproc.return_value = None
         mock_cursor.description = [['Column1'], ['Column2']]
-        mock_cursor.fetchall.side_effect = pymssql.OperationalError
+        mock_cursor.rowcount = -1
+        mock_cursor.fetchall.side_effect = pymssql.OperationalError("executed statement has no resultset")
 
         mock_connection = MagicMock()
         mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
@@ -575,7 +598,8 @@ class TestRunSQLQuery(unittest.TestCase):
         """
         mock_cursor = MagicMock()
         mock_cursor.execute.return_value.__enter__.return_value = None
-        mock_cursor.fetchall.side_effect = pymssql.OperationalError("connection failed")
+        mock_cursor.rowcount = -1
+        mock_cursor.fetchall.side_effect = pymssql.OperationalError("executed statement has no resultset")
         mock_cursor.description = [['Column1'], ['Column2']]
         mock_connection = MagicMock()
         mock_connection.cursor.return_value.__enter__.return_value = mock_cursor
@@ -666,11 +690,23 @@ class TestMapProbsColumn(unittest.TestCase):
         Tests error throwing.
         """
         mock_class_map.return_value = {0: 'class_1', 1: "class_2"}
+        # Sample dictionaries
+        entry1 = {0: .5, 1: .5}
+        entry2 = {0: .1, 1: .9}
+
+        # Convert dictionaries to string representations
+        entry1_str = entry1
+        entry2_str = entry2
+
         # Create a pandas Series
+        prob_columns = pd.Series([entry1_str, entry2_str])
         model_id = 1
 
         with self.assertRaises(ValueError):
             su.map_probs_column(model_id, 'prob_columns')
+        with self.assertRaises(ValueError):
+            su.map_probs_column(model_id, prob_columns)
+        
 
 class TestGenerateRandomEvaluationSet(unittest.TestCase):
     """
@@ -781,6 +817,26 @@ class TestUpdateScores(unittest.TestCase):
         mock_sql_query.return_value = df
         su.update_scores(i_ids=[1])
         self.assertEqual(mock_warn.call_count, 1)
+
+    @patch('utils.sql_utils.run_sql_query')
+    def test_errors(self, mock_sql_query):
+        """
+        Tests warnings for generating a random evaluation set.
+        """
+        data = {
+            'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Emma'],
+            'Age': [25, 30, 35, 40, 45],
+            'City': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix']
+        }
+
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        mock_sql_query.return_value = df
+
+        with self.assertRaises(ValueError):
+            su.update_scores(i_ids=[1],label_weight=3.4)
+        with self.assertRaises(ValueError):
+            su.update_scores(i_ids=[1,'23'])
 
 class TestChunky(unittest.TestCase):
     """
