@@ -115,7 +115,7 @@ def await_connection(max_time=60, step=5):
         raise TypeError(f"step must be an int but got type {type(step)}")
     if not isinstance(max_time, int):
         raise TypeError(f"max_time must be an int but got type {type(max_time)}")
-    
+
     for _ in range(int(max_time//step)):
         if data_utils.get_status():
             return True

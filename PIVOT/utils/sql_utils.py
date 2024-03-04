@@ -34,7 +34,7 @@ import pandas as pd
 import streamlit as st
 
 import pymssql
-from tqdm.auto import tqdm, trange
+from tqdm.auto import tqdm
 # import constants
 from utils.sql_constants import SP_ARGS_TYPE_MAPPING, SP_FILE_NAMES, RELABEL_LAMBDA
 from utils import load_config
@@ -371,7 +371,7 @@ def get_server_arguments(server_args: Optional[Dict[str, str]] = {}) -> Tuple[st
         Tuple: a tuple containing the strings for server, database, username, and password
     """
     # if new parameters are passed, load from dict or use config file
-    CONFIG = load_config()
+    CONFIG = load_config() # pylint: disable=invalid-name
     server = server_args.get('server', CONFIG['server'])
     database = server_args.get('database', CONFIG['database'])
     user = server_args.get('username', CONFIG['db_user'])
@@ -657,7 +657,8 @@ def update_scores(i_ids: list[int], label_weight: int = 1, mode: str = 'insert')
     """
     # Check label_weight validity
     if not isinstance(label_weight, (int, np.int32, np.int64)):
-        raise ValueError(f"Expected positive int for label_weight. Received type{type(label_weight)}, value {label_weight}")
+        raise ValueError(
+            f"Expected positive int for label_weight. Received type{type(label_weight)}, value {label_weight}")
     # Check i_id validity
     for i_id in i_ids:
         if not (isinstance(i_id, (int, np.int32, np.int64)) and i_id > 0):
@@ -665,8 +666,8 @@ def update_scores(i_ids: list[int], label_weight: int = 1, mode: str = 'insert')
 
     # Generate Query Arguments
     direction = 1 if (mode == 'insert') else -1
-    MULTIPLIER = np.exp(-RELABEL_LAMBDA * label_weight * direction)
-    I_ID_TUPLE = ','.join(str(i_id) for i_id in i_ids)
+    MULTIPLIER = np.exp(-RELABEL_LAMBDA * label_weight * direction) # pylint: disable=invalid-name
+    I_ID_TUPLE = ','.join(str(i_id) for i_id in i_ids) # pylint: disable=invalid-name
     # Generate Query
     query_string = f"""
         UPDATE METRICS
@@ -739,7 +740,7 @@ def delete_labels_cleanup(remove_labels_query: str):
     for label_weight in label_difference['WEIGHT'].unique():
         subset = diff_df.query(f'WEIGHT == {label_weight}')
         i_id_list = list(subset['I_ID'].values)
-        for i_id_chunk in tqdm(chunky(i_id_list, 500), total=len(i_id_list)//500, desc="Chunked I_IDs", leave=False):
+        for i_id_chunk in tqdm(chunky(i_id_list, 500), total=len(i_id_list)//500, desc="Chunked I_IDs", leave=False): #pylint: disable=line-too-long
             update_scores(i_ids=i_id_chunk, label_weight=label_weight, mode='delete')
 
     return

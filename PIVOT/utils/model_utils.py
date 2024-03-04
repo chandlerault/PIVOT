@@ -19,10 +19,9 @@ import requests
 
 import numpy as np
 import pandas as pd
-import cv2
 import imageio
 from tensorflow.keras.models import model_from_json
-
+import data_utils as du
 from azureml.core import Workspace, Experiment
 
 from utils import load_config
@@ -37,7 +36,7 @@ def get_model_info(m_id):
     Returns:
         endpoint_name (str): The name of the model endpoint to be called to make predictions.
     """
-    CONFIG = load_config()
+    CONFIG = load_config() # pylint: disable=invalid-name
 
     workspace = Workspace.create(name=CONFIG['workspace_name'],
                       subscription_id=CONFIG['subscription_id'],
@@ -53,33 +52,6 @@ def get_model_info(m_id):
             endpoint_name = CONFIG['endpoint_name']
 
     return endpoint_name
-
-def preprocess_input(image, fixed_size=128):
-    """
-    Preprocesses an input image by resizing it to a fixed size and normalizing pixel values.
-
-    Parameters:
-        image (numpy.ndarray): Input image as a NumPy array.
-        fixed_size (int): Target size for the image after resizing. Default is 128.
-
-    Returns:
-        numpy.ndarray: Preprocessed image with the specified fixed size.
-    """
-    image_size = image.shape[:2]
-    ratio = float(fixed_size)/max(image_size)
-    new_size = tuple(int(x * ratio) for x in image_size)
-    img = cv2.resize(image, (new_size[1], new_size[0]))
-    delta_w = fixed_size - new_size[1]
-    delta_h = fixed_size - new_size[0]
-    top, bottom = delta_h//2, delta_h-(delta_h//2)
-    left, right = delta_w//2, delta_w-(delta_w//2)
-    color = [0, 0, 0]
-    resized = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
-    # gray_image = cv2.cvtColor(ri, cv2.COLOR_BGR2GRAY)
-    gray_image = resized
-    gimg = np.array(gray_image).reshape((fixed_size, fixed_size, 1))
-    img_n = cv2.normalize(gimg, gimg, 0, 255, cv2.NORM_MINMAX)
-    return img_n
 
 class NumpyArrayEncoder(JSONEncoder):
     """
@@ -110,7 +82,7 @@ def predict(df, m_id):
             Columns: i_id (int): The image ID.
                      probs: A list of 10 class probabilities.
     """
-    CONFIG = load_config()
+    CONFIG = load_config() # pylint: disable=invalid-name
 
     endpoint_name = get_model_info(m_id)
 
@@ -119,11 +91,11 @@ def predict(df, m_id):
     api_key = CONFIG['api_key']
 
     if not api_key:
-        raise Exception("A key should be provided to invoke the endpoint")
+        raise KeyError("A key should be provided to invoke the endpoint")
     cloud_urls = df.cloud_urls.values
     data = []
     for c_url in cloud_urls:
-        data.append(preprocess_input(np.expand_dims(imageio.v2.imread(c_url), axis=-1)))
+        data.append(du.preprocess_input(np.expand_dims(imageio.v2.imread(c_url), axis=-1)))
 
     # This takes longer for some reason
     # data = df.cloud_urls.apply(lambda x: preprocess_input(np.expand_dims(imageio.v2.imread(x), axis=-1))).values
