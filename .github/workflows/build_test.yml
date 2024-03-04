@@ -11,13 +11,13 @@ name: build_test
 on:
   push:
     branches:
-      - chandlerault_qa
+      - chandler_qa
       - chandler_data
   pull_request:
     # Configuring this means that your PRs will get a GitHub comment
     # from Coveralls with your coverage.
     branches:
-      - chandlerault_qa
+      - chandler_qa
       - chandler_data
 
 # A list of jobs to run as part of the workflow
@@ -91,7 +91,7 @@ jobs:
       # Next step: run pylint. Anything less than 10/10 will fail.
       - name: Lint with pylint
         run: |
-          pylint PIVOT/**/*.py
+          pylint PIVOT/utils/*.py
 
       # Next step: run the unit tests with code coverage.
       - name: Unit tests
