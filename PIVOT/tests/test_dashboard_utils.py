@@ -188,6 +188,18 @@ class TestPlotRocCurve(unittest.TestCase):
         self.assertEqual(fig.layout.margin.t, 50)
         self.assertEqual(fig.layout.margin.l, 100)
 
+    def test_less_classes(self):
+        self.classes = [0,1,2]
+        self.prob_label = pd.DataFrame({
+            0: [0.2, 0.8, 0.3, 0.7],
+            1: [0.6, 0.3, 0.4, 0.9]
+        })
+        fig = dau.plot_roc_curve(self.true_label, self.prob_label, self.classes)
+        self.assertEqual(fig.layout.xaxis.title.text, 'False Positive Rate')
+        self.assertEqual(fig.layout.yaxis.title.text, 'True Positive Rate')
+        self.assertEqual(fig.layout.margin.t, 50)
+        self.assertEqual(fig.layout.margin.l, 100)
+
 class TestGetAccPrecRecall(unittest.TestCase):
 
     def setUp(self):
