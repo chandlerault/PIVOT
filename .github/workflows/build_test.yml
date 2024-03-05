@@ -43,7 +43,7 @@ jobs:
     # GitHub will run the tests for each of these Python versions.
     strategy:
       matrix:
-        python-version: ["3.9"] #, "3.10"]
+        python-version: ["3.9", "3.10", "3.11"]
 
     # The actual workflow steps!
     steps:
