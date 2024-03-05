@@ -5,10 +5,11 @@ import unittest
 from unittest.mock import patch, MagicMock, call
 import sys
 from io import StringIO
-from utils import data_utils as du
-from utils import CONFIG
 import pymssql
 import numpy as np
+from utils import data_utils as du
+from utils import CONFIG
+
 
 
 
@@ -52,13 +53,19 @@ class TestGetStatus(unittest.TestCase):
         self.assertFalse(result)
 
     @patch('utils.data_utils.pymssql.connect')
-    def test_get_status_exception(self, mock_connect):
+    @patch("builtins.print")
+    def test_get_status_exception(self, mock_print, mock_connect):
         """
         Test get_status function when an exception is raised during database connection.
         """
-        mock_connect.side_effect = Exception("Connection error")
-        with self.assertRaises(Exception):
-            du.get_status()
+        interface_error = "InterfaceError error"
+        db_error = "DatabaseError error"
+        mock_connect.side_effect = pymssql.InterfaceError(interface_error)
+        du.get_status()
+        mock_print.assert_called_with("InterfaceError:", interface_error)
+        mock_connect.side_effect = pymssql.DatabaseError(db_error)
+        du.get_status()
+        mock_print.assert_called_with("DatabaseError:", db_error)
 
 
 class TestGetBlobBytes(unittest.TestCase):
@@ -364,6 +371,19 @@ class TestSelectDistinct(unittest.TestCase):
 
         self.assertTrue(output.strip().startswith('InterfaceError'))
 
+    @patch('utils.data_utils.pymssql.connect')
+    @patch('utils.data_utils.load_config')
+    def test_no_config(self, mock_config, mock_connect):
+        """
+        Test select function when loading configuration is None.
+        """
+        mock_config.return_value = None
+        columns = ('c1','c2')
+        table_name = 'your_table'
+
+        self.assertListEqual([],du.select_distinct(table_name, columns))
+        mock_connect.assert_not_called()
+    
 class TestPreprocessInput(unittest.TestCase):
     """
     Test case for the preprocess_input function.
