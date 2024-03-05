@@ -11,7 +11,7 @@ Currently, the prevailing method for label validation in this field involves man
 | Name | GitHub | Name | GitHub |
 |:------:|:------:|:------:|:------:|
 | **Yash Manne** | *yashmanne*| **Yamina Katariya** | *YaminaKat7* |
-| **Aditi Shrivastava** | *ad-iti* | **Chandler Ault** | *Dreamweaver2k* |
+| **Aditi Shrivastava** | *ad-iti* | **Chandler Ault** | *chandlerault* |
 
 ## Table of Contents
 * [Introduction](#introduction)
