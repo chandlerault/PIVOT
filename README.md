@@ -1,5 +1,6 @@
 ![](./PIVOT/images/PIVOT_title.png)
 
+[![Coverage Status](https://coveralls.io/repos/github/chandlerault/PIVOT/badge.svg?branch=main)](https://coveralls.io/github/chandlerault/PIVOT?branch=main)
 <a id="introduction"></a>
 ## Introduction
 There is an urgent need to accurately quantify oceanic phytoplankton to understand their role in the global Carbon Cycle. Collaborating with the Air-Sea Interaction & Remote Sensing department at the University of Washington Applied Physics Lab, our M.S. Data Science capstone group developed an interactive tool to validate Convolutional Neural Network (CNN) classified phytoplankton images efficiently using a novel, Active Learning inspired method.
