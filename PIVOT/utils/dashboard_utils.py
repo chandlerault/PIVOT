@@ -10,20 +10,18 @@ Functions:
     - get_acc_prec_recall: Calculates the accuracy, precision, and recall of the output
                            DataFrame of a classification model.
 """
-import itertools
 import pandas as pd
-import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
-import numpy as np
 import plotly.figure_factory as ff
+import numpy as np
 import streamlit as st
 
 from sklearn.metrics import precision_score, recall_score, roc_auc_score, \
-                            confusion_matrix, classification_report, roc_curve, auc
+                            confusion_matrix, classification_report, roc_curve
 
 
-def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.cm.YlGnBu):
+def plot_confusion_matrix(cm_df, col_names, classes, normalize=False):
     """
     This function plots a confusion matrix.
 
@@ -36,7 +34,7 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.c
         - cmap (matplotlib colormap): Colormap to be used for the plot.
 
     Returns:
-        - fig: A matplotlib figure.
+        - fig: A plotly figure.
     """
     con_matrix = confusion_matrix(cm_df[col_names[0]], cm_df[col_names[1]])
 
@@ -50,7 +48,7 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False, cmap=plt.c
     # change each element of z to type string for annotations
     z_text = [[str(y) for y in x] for x in z]
 
-    # set up figure 
+    # set up figure
     fig = ff.create_annotated_heatmap(z, x=list(x), y=list(y), annotation_text=z_text, colorscale='GnBu')
 
     # add custom xaxis title
@@ -100,7 +98,7 @@ def plot_precision_recall_f1(class_report):
                          y=class_report['recall'],
                          name='Recall',
                          marker_color='#9cd9b9'))
-    fig.add_trace(go.Bar(x=class_report['class_label'], 
+    fig.add_trace(go.Bar(x=class_report['class_label'],
                          y=class_report['f1-score'],
                          name='F1 Score',
                          marker_color='#4cb1d2'))
@@ -162,7 +160,17 @@ def get_acc_prec_recall(model_df, col_names):
     return (accuracy, precision, recall)
 
 def plot_roc_curve(true_label, prob_label, classes):
-            
+    """
+    This function creates an ROC curve plot from input.
+
+    Args:
+        - true_label (pd.Series)
+        - prob_label (pd.Series)
+        - classes (list)
+
+    Returns:
+        - go.Figure
+    """
     # One hot encode the labels in order to plot them
     y_onehot = pd.get_dummies(true_label, columns=classes)
 
@@ -247,7 +255,7 @@ def target_plot(count_df, target):
                          base=count_df['# Images Labeled'],
                          customdata=count_df['remaining'],
                          marker=dict(color='rgba(255, 0, 0, 0.1)'),
-                         showlegend=False, 
+                         showlegend=False,
                          hovertemplate= ("<b>%{x}</b><br>"
                                           "Remaining: %{customdata}<br>"
                                           "<extra></extra>")))
@@ -261,6 +269,7 @@ def target_plot(count_df, target):
 
 def class_proportion_plot(percent_df):
     """
+    Creates a class proportion plot from a percentage df.
     """
     custom_colors = ['#1B7AB5']
     fig = px.bar(percent_df,
@@ -268,17 +277,17 @@ def class_proportion_plot(percent_df):
                  y='% Images Labeled',
                  color_discrete_sequence=custom_colors)
     fig.update_layout(title_text='<i><b>Proportion of Validated Images</b></i>')
-    
+
     return fig
 
 @st.cache_data(ttl=500)
 def plot_sunburst(agg_df):
     """
+    Plots a sunburst plot from a aggregated prediction and label df.
     """
     fig = px.sunburst(agg_df, path=['PRED_LABEL', 'CONSENSUS'], values='count')
     fig.update_traces(marker_colors=[
         px.colors.qualitative.Prism[c] for c in pd.factorize(fig.data[0].labels)[0]],
                     leaf_opacity=.8,)
-    
-    return fig
 
+    return fig

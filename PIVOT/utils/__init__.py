@@ -6,8 +6,8 @@ Global Variables:
     - CONFIG (dict): Dictionary containing configuration settings loaded from the configuration file.
 """
 import os
-import yaml
 import time
+import yaml
 
 CONFIG_FILE_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '../config/config.yaml'))

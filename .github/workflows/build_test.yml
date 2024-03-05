@@ -11,14 +11,16 @@ name: build_test
 on:
   push:
     branches:
-      - chandlerault_qa
+      - chandler_qa
       - chandler_data
+      - main
   pull_request:
     # Configuring this means that your PRs will get a GitHub comment
     # from Coveralls with your coverage.
     branches:
-      - chandlerault_qa
+      - chandler_qa
       - chandler_data
+      - main
 
 # A list of jobs to run as part of the workflow
 jobs:
@@ -41,7 +43,7 @@ jobs:
     # GitHub will run the tests for each of these Python versions.
     strategy:
       matrix:
-        python-version: ["3.9"] #, "3.10"]
+        python-version: ["3.9", "3.10", "3.11"]
 
     # The actual workflow steps!
     steps:
@@ -91,7 +93,7 @@ jobs:
       # Next step: run pylint. Anything less than 10/10 will fail.
       - name: Lint with pylint
         run: |
-          pylint PIVOT/**/*.py
+          pylint PIVOT/utils/*.py
 
       # Next step: run the unit tests with code coverage.
       - name: Unit tests

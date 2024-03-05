@@ -60,7 +60,7 @@ def initial_ingestion(image_filepaths: list = None, parallelize: bool = True, ba
         print(f"Got all image paths from {csv_path}.")
     # check whether path exists
     verified_paths = []
-    CONFIG = load_config()
+    CONFIG = load_config() #pylint: disable=invalid-name
     connection_string = CONFIG['connection_string']
     container_name = CONFIG['image_container']
 
