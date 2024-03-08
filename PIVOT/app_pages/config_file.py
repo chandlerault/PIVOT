@@ -77,9 +77,9 @@ def main():
         st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
         # Display current database configuration variables if they exist
-        if os.stat("config/config.yaml").st_size != 0:
+        config_dict = load_config()
+        if None not in config_dict.values():
             with st.expander("Current Database Configuration:"):
-                config_dict = load_config()
                 st.write("*Connection String:*", config_dict['connection_string'])
                 st.write("*Image Container:*", config_dict['image_container'])
                 st.write("*Server Name:*", config_dict['server'])
@@ -87,8 +87,8 @@ def main():
                 st.write("*Admin Username:*", config_dict['db_user'])
                 st.write("*Password:*", config_dict['db_password'])
                 st.write("*Subscription ID:*", config_dict['subscription_id'])
-                st.write("*Resource Group:*", config_dict['workspace_name'])
-                st.write("*Workspace Name:*", config_dict['db_password'])
+                st.write("*Resource Group:*", config_dict['resource_group'])
+                st.write("*Workspace Name:*", config_dict['workspace_name'])
                 st.write("*Experiment Name:*", config_dict['experiment_name'])
                 st.write("*Model API Key:*", config_dict['api_key'])
                 st.write("*Model Name:*", config_dict['model_name'])
