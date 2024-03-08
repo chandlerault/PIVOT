@@ -52,10 +52,19 @@ Here is an overview of our project structure:
 │   │   ├── resources.py
 │   ├── config/
 │   │   ├── config.yaml
-│   │   ├── images/
 │   ├── data/
 │   │   ├── model-summary-cnn-v1-b3.csv
 │   ├── images/
+|   |   ├── phytoplankton/
+|   |   |   ├── chloro/
+|   |   |   ├── ciliates/
+|   |   |   ├── crypto/
+|   |   |   ├── diatoms/
+|   |   |   ├── dictyo/
+|   |   |   ├── dinoflagellates/
+|   |   |   ├── eugleno/
+|   |   |   ├── other/
+|   |   |   ├── pyrmnesio/
 │   │   ├── apl-uw_logo-over.png
 │   │   ├── ER.svg
 │   │   ├── IV.svg
@@ -66,7 +75,20 @@ Here is an overview of our project structure:
 │   │   ├── tiny_drifters.jpeg
 │   │   ├── WHOI_PrimaryLogo.png
 │   ├── model_serving/
+│   │   ├── .DS_Store
+│   │   ├── deploy.py
+│   │   ├── mlflow_log.py
+│   │   ├── model-cnn-v1-b3.h5
+│   │   ├── model-cnn-v1-b3.json
+│   │   ├── score.py
+│   │   ├── scoring_data.json
 │   ├── tests/
+│   │   ├── __init__.py
+│   │   ├── test_app_utils.py
+│   │   ├── test_dashboard_utils.py
+│   │   ├── test_data_utils.py
+│   │   ├── test_sql_utils.py
+│   │   ├── test_utils_config.py
 │   ├── utils/
 │   │   ├── stored_procedures/
 │   │   │   ├── Generate_Random_Test_Set.sql
@@ -131,7 +153,7 @@ The images utilized in this project were sourced from an [Imaging FlowCytobot (I
 ### Storage
 In our system architecture, data components such as user information, model specifications, image labels, CNN predictions, and image details are organized and stored within a [Azure SQL database](https://azure.microsoft.com/en-us/products/azure-sql/database/?ef_id=_k_Cj0KCQiAxOauBhCaARIsAEbUSQSlZdOR_5s3tO95CSEyK-JV0YmkZY2vYCaBmTVKb13GoDGd4UuVkGkaAuGVEALw_wcB_k_&OCID=AIDcmm5edswduu_SEM__k_Cj0KCQiAxOauBhCaARIsAEbUSQSlZdOR_5s3tO95CSEyK-JV0YmkZY2vYCaBmTVKb13GoDGd4UuVkGkaAuGVEALw_wcB_k_&gad_source=1&gclid=Cj0KCQiAxOauBhCaARIsAEbUSQSlZdOR_5s3tO95CSEyK-JV0YmkZY2vYCaBmTVKb13GoDGd4UuVkGkaAuGVEALw_wcB). This database serves as the backbone of our application, enabling seamless data retrieval and manipulation for display on the website. We develop utility functions and stored procedures that dynamically retrieve data based on user interactions and system events, such as model updates or new image availability. These functions facilitate coherent data presentation on the website while maintaining flexibility for future updates. Additionally, the system automatically updates SQL tables when new labels are entered, new models are trained, or new images are acquired, ensuring the displayed data is always current.
 
-The entity relationship (ER) diagram below visualizes the relationships between all tables in the SQL Database. For a full description of all variables saved to the database, please refer to the [Data Dctionary].
+The entity relationship (ER) diagram below visualizes the relationships between all tables in the SQL Database. For a full description of all variables saved to the database, please refer to the [`create_db.sql`](./PIVOT/create_db.sql) file.
 
 ![](./PIVOT/images/ER.svg)
 
