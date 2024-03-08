@@ -30,28 +30,27 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False):
         - col_names (list): List of column names that contain the true and predicted labels.
         - classes (list): List of class labels.
         - normalize (bool): Whether to normalize the matrix or not.
-        - title (str): Plot title.
-        - cmap (matplotlib colormap): Colormap to be used for the plot.
 
     Returns:
         - fig: A plotly figure.
     """
+
+    # Create a confusion matrix
     con_matrix = confusion_matrix(cm_df[col_names[0]], cm_df[col_names[1]])
 
     x = classes
     y = classes
 
+    # Normalize confusion matrix to scale values
     if normalize:
         con_matrix = np.around(con_matrix.astype('float') / con_matrix.sum(axis=1)[:, np.newaxis], 2)
     z = con_matrix
 
-    # change each element of z to type string for annotations
+    # Change each element of z to type string for annotations
     z_text = [[str(y) for y in x] for x in z]
 
-    # set up figure
+    # Create the figure and add titles
     fig = ff.create_annotated_heatmap(z, x=list(x), y=list(y), annotation_text=z_text, colorscale='GnBu')
-
-    # add custom xaxis title
     fig.add_annotation(dict(font=dict(color="black",size=14),
                             x=0.5,
                             y=-0.15,
@@ -59,8 +58,6 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False):
                             text="Predicted value",
                             xref="paper",
                             yref="paper"))
-
-    # add custom yaxis title
     fig.add_annotation(dict(font=dict(color="black",size=14),
                             x=-0.35,
                             y=0.5,
@@ -70,11 +67,10 @@ def plot_confusion_matrix(cm_df, col_names, classes, normalize=False):
                             xref="paper",
                             yref="paper"))
 
-    # adjust margins to make room for yaxis title
+    # Adjust figure layout and add color bar
     fig.update_layout(margin=dict(t=50, l=200))
-
-    # add colorbar
     fig['data'][0]['showscale'] = True
+
     return fig
 
 @st.cache_data(ttl=500)
@@ -114,7 +110,8 @@ def get_classification_report(model_df, col_names, class_names = None):
     Args:
         - model_df (DataFrame): A Pandas DataFrame containing the true, predicted, and
                                 names of the class labels.
-        - col_names (list): A list of the column names
+        - col_names (list): List of column names that contain the true and predicted labels.
+        - class_names (list) (optional): An ordered list of the class names.
 
     Returns:
         - c_report: The filtered classification report as a Pandas DataFrame.
@@ -164,16 +161,18 @@ def plot_roc_curve(true_label, prob_label, classes):
     This function creates an ROC curve plot from input.
 
     Args:
-        - true_label (pd.Series)
-        - prob_label (pd.Series)
-        - classes (list)
+        - true_label (pd.Series): A series of validated class labels.
+        - prob_label (pd.Series): A series of predicted class labels.
+        - classes (list): a list of class names.
 
     Returns:
-        - go.Figure
+        - fig: A plotly figure.
     """
     # One hot encode the labels in order to plot them
     y_onehot = pd.get_dummies(true_label, columns=classes)
 
+    # Determine which classes do not exist in case of test_summary.
+    # Classes that have yet to be classified will be filled with values of 0.
     if len(prob_label.columns) != len(classes):
         columns_not_in_list = [col for col in prob_label.columns if col not in classes]
         missing_columns_df = pd.DataFrame(0,
@@ -182,14 +181,14 @@ def plot_roc_curve(true_label, prob_label, classes):
         y_onehot = pd.concat([y_onehot, missing_columns_df], axis=1)
         y_onehot = y_onehot.reindex(sorted(y_onehot.columns), axis=1)
 
-    # Create an empty figure, and iteratively add new lines
-    # every time we compute a new class
+    # Create an empty figure, and iteratively add new lines for each class
     fig = go.Figure()
     fig.add_shape(
         type='line', line=dict(dash='dash'),
         x0=0, x1=1, y0=0, y1=1
     )
 
+    # Calculate the ROC and AUC score for each class and plot
     count = 0
     for i in range(prob_label.shape[1]):
         y_true = y_onehot.iloc[:, i]
@@ -207,9 +206,6 @@ def plot_roc_curve(true_label, prob_label, classes):
         xaxis_title='False Positive Rate',
         yaxis_title='True Positive Rate',
         margin=dict(t=50, l=100)
-        #yaxis=dict(scaleanchor="x", scaleratio=1),
-        #xaxis=dict(constrain='domain'),
-        #width=700, height=500
     )
     return fig
 
@@ -219,7 +215,7 @@ def target_plot(count_df, target):
     Plots the number of images labeled for each class in comparison to a user-inputted target threshold.
     
     Parameters:
-        count_df (pd.DataFrame): Dataframe with the number of images labeled per class.
+        count_df (pd.DataFrame): DataFrame with the number of images labeled per class.
         target (int): The target number of images to be labeled for each class.
     
     Returns:

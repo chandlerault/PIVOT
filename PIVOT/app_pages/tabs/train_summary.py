@@ -27,6 +27,7 @@ def main():
                     "Prymnesio",
                     "Other"]
 
+    # Read in CNN output as a Pandas DataFrame and calculate summary metrics
     model_pred = pd.read_csv('data/model-summary-cnn-v1-b3.csv')
     model_stats = ds.get_acc_prec_recall(model_pred, ['is_correct',
                                                     'true_label',
@@ -43,13 +44,15 @@ def main():
                  the different graphs by selecting items on the legends, click and drag
                  over graphs to zoom, and download graphs as PNGs by hovering over graphs
                  and selecting the camera icon.""")
-        
+
+        # Replace the high group "null" to "Unidentifiable"
         model_pred['high_group'] = model_pred['high_group'].fillna('Unidentifiable')
         group_count = model_pred.groupby('high_group')['true_label'] \
                                 .count().sort_values(ascending=True)
         
         st.markdown("""<h1></h1>""", unsafe_allow_html=True)
 
+        # Display summary metrics
         three_columns = st.columns([.75,2.5,2.5])
         with three_columns[0]:
             st.subheader("Metrics")
@@ -59,6 +62,7 @@ def main():
             st.metric("Images Validated:", f"{len(model_pred)}")
 
         with three_columns[1]:
+            # Display confusion matrix
             st.subheader("Confusion Matrix", 
                          help="""A confusion matrix is a tabular representation that
                          summarizes the effectiveness of a machine learning model
@@ -68,11 +72,9 @@ def main():
                                             ['true_label', 'pred_label'],
                                             classes=class_labels,
                                             normalize=True), use_container_width=True)
-            c_report = ds.get_classification_report(model_pred,
-                                                    ['true_label','pred_label'],
-                                                    class_names = class_labels)
 
         with three_columns[2]:
+            # Display ROC Curve
             st.subheader("ROC Curve",
                          help="""An ROC (Receiver Operating Characteristic) curve,
                          illustrates how well a classification model performs across
@@ -88,16 +90,21 @@ def main():
                     
         two_columns = st.columns([4,3])
         with two_columns[0]:
+            # Display precision, recall, and f1 score plot
             st.subheader("Model Performance: Precision, Recall, F1 Score", 
                          help="""Precision is the actual correct prediction divided by total
                         prediction made by model. Recall is the number of true positives
                         divided by the total number of true positives and false
                         negatives. F1 Score is the weighted average of precision and
                         recall.""")
+            c_report = ds.get_classification_report(model_pred,
+                                                    ['true_label','pred_label'],
+                                                    class_names = class_labels)
             c_report = c_report.sort_values(by=['f1-score'], ascending=False)
             st.plotly_chart(ds.plot_precision_recall_f1(c_report),
                             use_container_width=True)
         with two_columns[1]:
+            # Add a class distribution plot unique to train summary
             st.subheader("Class Distribution")
             fig = px.bar(group_count,
                      x='true_label',
@@ -106,7 +113,6 @@ def main():
                      labels={
                          "true_label": "",
                          "high_group": ""})
-            fig.update_layout(title_text='<i><b>Class Distribution</b></i>')
             fig.update_traces(marker_color='#094789')
             fig.update_xaxes(showgrid=True)
             fig.update_traces(hovertemplate=None)
