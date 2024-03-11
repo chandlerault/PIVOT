@@ -12,22 +12,6 @@ Once you have your database resource setup, you can create the SQL database stru
 
 ## Azure ML Model
 
-[Azure Machine Learning SDK for Python Documentation](https://learn.microsoft.com/en-us/python/api/overview/azure/ml/?view=azure-ml-py)
+We use [MLFlow](https://mlflow.org/docs/latest/models.html) to track and register our model, as well as store model weights and artifacts. Our model is then deployed on the Azure Machine Learning Studio via an [online endpoint](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-deploy-online-endpoints?view=azureml-api-2&tabs=azure-cli) which allows for real-time inference via a scalable REST endpoint. A custom scoring script can be used for [deployed MLFlow models](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-deploy-mlflow-models-online-endpoints?view=azureml-api-2&tabs=cli).
 
-#### Subscription ID
-
-Blah blahd bladhhw dewhud wlink
-
-#### Resource Group
-
-#### Workspace Name
-
-#### Experiment Name
-
-#### Model API Key
-
-#### Model Name
-
-#### Model Endpoint Name
-
-#### Model Deployment Name
+Learn more about hosting models on Azure ML via Python scripts with the [Azure Machine Learning SDK for Python Documentation](https://learn.microsoft.com/en-us/python/api/overview/azure/ml/?view=azure-ml-py).
