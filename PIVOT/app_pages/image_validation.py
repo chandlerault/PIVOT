@@ -135,6 +135,7 @@ def display_label_info(label_df, count):
         - exp_level (int): The level of experience ranging from 1 to 5.
     """
     label_image = app_utils.get_image(label_df.iloc[count]['BLOB_FILEPATH'])
+    
     label_pred = label_df.iloc[count]['PRED_LABEL']
     label_id = label_df.iloc[count]['IMAGE_ID']
     im_col,_ = st.columns([1,3])
