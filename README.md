@@ -74,14 +74,6 @@ Here is an overview of our project structure:
 │   │   ├── SYS.svg
 │   │   ├── tiny_drifters.jpeg
 │   │   ├── WHOI_PrimaryLogo.png
-│   ├── model_serving/
-│   │   ├── .DS_Store
-│   │   ├── deploy.py
-│   │   ├── mlflow_log.py
-│   │   ├── model-cnn-v1-b3.h5
-│   │   ├── model-cnn-v1-b3.json
-│   │   ├── score.py
-│   │   ├── scoring_data.json
 │   ├── tests/
 │   │   ├── __init__.py
 │   │   ├── test_app_utils.py
@@ -98,6 +90,13 @@ Here is an overview of our project structure:
 │   │   │   ├── Model_Evaluation_Filtering.sql
 │   │   │   ├── Model_Evaluation_NonTest.sql
 │   │   │   ├── Model_Training.sql
+|   |   ├── model_serving/
+│   │   │   ├── deploy.py
+│   │   │   ├── mlflow_log.py
+│   │   │   ├── model-cnn-v1-b3.h5
+│   │   │   ├── model-cnn-v1-b3.json
+│   │   │   ├── score.py
+│   │   │   ├── scoring_data.json
 │   │   ├── __init__.py
 │   │   ├── app_utils.py
 │   │   ├── dashboard_utils.py
