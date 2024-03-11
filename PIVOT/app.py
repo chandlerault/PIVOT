@@ -85,7 +85,7 @@ with st.sidebar:
 
     # Add buttons to UTOPIA GitHub page
     st.markdown("""<h5 style='text-align: left; color: white;'>
-                Links to relavent GitHub repositories:</h5>""",
+                Links to relevant GitHub repositories:</h5>""",
                 unsafe_allow_html=True)
 
     URL_UTOPIA_GITHUB = "https://github.com/ifcb-utopia"
