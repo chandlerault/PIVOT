@@ -74,6 +74,7 @@ Here is an overview of our project structure:
 │   │   ├── SYS.svg
 │   │   ├── tiny_drifters.jpeg
 │   │   ├── WHOI_PrimaryLogo.png
+│   │   ├── exploratory_plots.png
 │   ├── tests/
 │   │   ├── __init__.py
 │   │   ├── test_app_utils.py
