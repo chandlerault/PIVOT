@@ -1,15 +1,14 @@
-connection_string: 
-image_container:
-server:
-database:
-db_user:
-db_password:
-
-subscription_id:
-resource_group:
-workspace_name:
-experiment_name:
-api_key:
-model_name:
-endpoint_name:
-deployment_name:
+connection_string: DefaultEndpointsProtocol=https;AccountName=ifcb;AccountKey=mzeoQjV8g8RZyI18AdD4x1XxQRm0GesvssNtPgGNom7a8Kk3FRe8bjCm9BRq7m/gwqrK8GcwOXDBPKWq21jFPg==;EndpointSuffix=core.windows.net
+image_container: naames
+server: capstoneservercjault.database.windows.net
+database: capstoneazure
+db_user: CloudSA85da88d3
+db_password: Passwordtest123
+subscription_id: 156ffac2-0545-4d4e-aab3-f89b83635d04
+resource_group: defaultresourcegroup-wus2
+workspace_name: pivot
+experiment_name: adt-pivot
+api_key: 4B2DTMyhNHgIk3lJtt8MSdBU5QodpCNf
+model_name: basemodel
+endpoint_name: basemodel-endpoint
+deployment_name: pivot-basemodel
