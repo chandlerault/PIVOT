@@ -173,5 +173,5 @@ This will pop up a browser window with the functioning web-application. For more
 
 <a id="final_docs"></a>
 ## Final Submission
-Our poster for the MSDS Capstone Poster Session, [PIVOT: CNN-Labeled Image Validation](./PIVOT/docs/Presentation_Poster.pdf), can be found in the `docs` folder along with a demo of the app. This short video is an example of the workflow. 
+Our poster for the MSDS Capstone Poster Session, [PIVOT: CNN-Labeled Image Validation](./PIVOT/docs/Presentation_Poster.pdf), can be found in the `docs` folder. A short demo video depicting the app's example workflow can also be found [here](https://drive.google.com/file/d/1Pgm8QNsFxkrAWgQCau7q7hFjwq42KOH_/view?usp=sharing). 
 
