@@ -24,6 +24,7 @@ Currently, the prevailing method for label validation in this field involves man
   * [Storage](#storage)
   * [Model Pipeline](#pipeline)
 * [Application](#application)
+* [Final Submission](#final_docs)
 
 <a id="tasks-of-interest"></a>
 ## Tasks of Interest
@@ -168,4 +169,9 @@ We generated our application through the open-source `streamlit` package. A loca
 conda activate pivot
 streamlit run PIVOT/app.py
 ```
-This will pop up a browser window with the functioning web-application.
+This will pop up a browser window with the functioning web-application. For more information on the database and model pipeline configuration setup, please refer to our [Configuration Setup](./PIVOT/docs/app_configuration_settings.md) guide.
+
+<a id="final_docs"></a>
+## Final Submission
+Our poster for the MSDS Capstone Poster Session, [PIVOT: CNN-Labeled Image Validation](./PIVOT/docs/Presentation_Poster.pdf), can be found in the `docs` folder along with a demo of the app. This short video is an example of the workflow. 
+
