@@ -56,16 +56,25 @@ Here is an overview of our project structure:
 │   ├── data/
 │   │   ├── model-summary-cnn-v1-b3.csv
 │   ├── images/
-|   |   ├── phytoplankton/
-|   |   |   ├── chloro/
-|   |   |   ├── ciliates/
-|   |   |   ├── crypto/
-|   |   |   ├── diatoms/
-|   |   |   ├── dictyo/
-|   |   |   ├── dinoflagellates/
-|   |   |   ├── eugleno/
-|   |   |   ├── other/
-|   |   |   ├── pyrmnesio/
+│   │   ├── phytoplankton/
+│   │   │   ├── chloro/
+│   │   │   ├── ... 8 example images
+│   │   │   ├── ciliates/
+│   │   │   ├── ... 6 example images
+│   │   │   ├── crypto/
+│   │   │   ├── ... 6 example images
+│   │   │   ├── diatoms/
+│   │   │   ├── ... 19 example images
+│   │   │   ├── dictyo/
+│   │   │   ├── ... 6 example images
+│   │   │   ├── dinoflagellates/
+│   │   │   ├── ... 13 example images
+│   │   │   ├── eugleno/
+│   │   │   ├── ... 6 example images
+│   │   │   ├── other/
+│   │   │   ├── ... 17 example images
+│   │   │   ├── pyrmnesio/
+│   │   │   ├── ... 12 example images
 │   │   ├── apl-uw_logo-over.png
 │   │   ├── ER.svg
 │   │   ├── IV.svg
@@ -109,6 +118,23 @@ Here is an overview of our project structure:
 │   │   ├── sql_utils.py
 │   ├── app.py
 │   ├── create_db.sql
+├── docs/
+│   ├── app_configuration_settings.md
+│   ├── Presentation_Poster.pdf 
+│   ├── Presentation_Poster.pdf 
+
+├── notebooks/
+│   ├── data/
+│   │   ├── inventory_df_with_probs.parquet.gzip
+│   │   ├── inventory_df_with_scores.parquet.gzip
+│   │   ├── total_downsampled.pickle.gz
+│   ├── Uncertainty_Scores.ipynb 
+│   ├── Experiment_RepeatedSampling.ipynb
+│   ├── Intial_Data_Ingestion.ipynb 
+│   ├── Parallelized_Feature_Vectors.ipynb
+│   ├── Parallelized_Image_Loading.ipynb
+│   ├── SQL_Queries.ipynb
+│   ├── Testing_Model_Serving.ipynb 
 ├── .gitignore
 ├── environment.yml
 ├── LICENSE
@@ -169,9 +195,9 @@ We generated our application through the open-source `streamlit` package. A loca
 conda activate pivot
 streamlit run PIVOT/app.py
 ```
-This will pop up a browser window with the functioning web-application. For more information on the database and model pipeline configuration setup, please refer to our [Configuration Setup](./PIVOT/docs/app_configuration_settings.md) guide.
+This will pop up a browser window with the functioning web-application. For more information on the database and model pipeline configuration setup, please refer to our [Configuration Setup](docs/app_configuration_settings.md) guide.
 
 <a id="final_docs"></a>
 ## Final Submission
-Our poster for the MSDS Capstone Poster Session, [PIVOT: CNN-Labeled Image Validation](./PIVOT/docs/Presentation_Poster.pdf), can be found in the `docs` folder. A short demo video depicting the app's example workflow can also be found [here](https://drive.google.com/file/d/1Pgm8QNsFxkrAWgQCau7q7hFjwq42KOH_/view?usp=sharing). 
+Our poster for the MSDS Capstone Poster Session, [PIVOT: CNN-Labeled Image Validation](docs/Presentation_Poster.pdf), can be found in the `docs` folder. A short demo video depicting the app's example workflow can also be found [here](https://drive.google.com/file/d/1Pgm8QNsFxkrAWgQCau7q7hFjwq42KOH_/view?usp=sharing). 
 
