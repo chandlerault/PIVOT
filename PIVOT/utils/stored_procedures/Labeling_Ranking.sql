@@ -1,3 +1,12 @@
+/*
+Name: AL_RANKINGS
+Description: This stored procedure retrieves top-ranked images based on a specified metric and model ID.
+Parameters:
+- @MODEL_ID: Integer denoting Model ID for filtering predictions.
+- @D_METRIC_ID: Integer denoting AL metric ID.
+- @BATCH_SIZE: Integer denoting number of top-ranked images to retrieve.
+*/
+
 CREATE OR ALTER PROCEDURE AL_RANKINGS
     @MODEL_ID INT,
     @D_METRIC_ID INT,

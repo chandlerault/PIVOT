@@ -1,3 +1,15 @@
+/*
+A set of commands to generate the Azure SQL database.
+Tables:
+- models: Table to store CNN models
+- images: Table to store image filepaths in Azure Blob
+- dissimilarity: Table to store dissimilarity and other active learning metrics
+- users: Table to store user information
+- predictions: Table to store class predictions of images for each model
+- metrics: Table to store computed AL metrics per image per model
+- labels: Table to store user labels for images
+*/
+
 CREATE TABLE models (
     m_id int IDENTITY(1,1) PRIMARY KEY, -- unique model identifier
     model_name VARCHAR(255) NOT NULL, -- name of CNN model
