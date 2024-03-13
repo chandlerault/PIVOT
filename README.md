@@ -121,13 +121,15 @@ Here is an overview of our project structure:
 ├── docs/
 │   ├── app_configuration_settings.md
 │   ├── Presentation_Poster.pdf 
-│   ├── Presentation_Poster.pdf 
-
+│   ├── Active_Learning.pdf 
 ├── notebooks/
 │   ├── data/
 │   │   ├── inventory_df_with_probs.parquet.gzip
 │   │   ├── inventory_df_with_scores.parquet.gzip
 │   │   ├── total_downsampled.pickle.gz
+│   ├── models/
+│   │   ├── model-cnn-v1-b3.h5
+│   │   ├── model-cnn-v1-b3.json
 │   ├── Uncertainty_Scores.ipynb 
 │   ├── Experiment_RepeatedSampling.ipynb
 │   ├── Intial_Data_Ingestion.ipynb 
@@ -135,6 +137,7 @@ Here is an overview of our project structure:
 │   ├── Parallelized_Image_Loading.ipynb
 │   ├── SQL_Queries.ipynb
 │   ├── Testing_Model_Serving.ipynb 
+│   ├── README.md 
 ├── .gitignore
 ├── environment.yml
 ├── LICENSE
