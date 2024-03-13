@@ -22,6 +22,9 @@ Functions:
     - get_class_map: Get class label mappings from the Models table based on model ID.
     - map_probs_column: Map probability column from SQL string representation to 
         dictionaries with full-form class labels.
+    - update_scores: Updates scores in the Metrics table as new labels are inserted in Labels table.
+    - delete_labels_cleanup: Designated function to delete images and revert metric scores.
+    - chunky: helper function to break complex queries into reasonable chunks.
 """
 import os
 import ast
