@@ -35,7 +35,7 @@ Currently, the prevailing method for label validation in this field involves man
   - Showcase several visual representations illustrating summary statistics for the trained model, accompanied by the outcomes of unseen datasets when executed on the trained model.
   - Allow users to select the models they wish to evaluate.
 - **Phytoplankton Labeling Resource Guide**:
-  - Proivde resources for users to reference for determining phytoplankton categories based on images. 
+  - Provide resources for users to reference for determining phytoplankton categories based on images. 
   
 <a id="repository-structure"></a>
 ## Repository Structure

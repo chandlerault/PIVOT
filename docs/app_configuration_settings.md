@@ -4,11 +4,11 @@ This application was designed to use Azure Blob Storage to host the images used 
 
 ## Azure Database Setup
 
-This application was setup and developed with an Azure SQL database in mind. For information regarding the setup of such a database, please see the [Azure documentation](https://learn.microsoft.com/en-us/azure/azure-sql/database/single-database-create-quickstart?view=azuresql&tabs=azure-portal). Once you setup the resource, you will need to ensure that the database can be accessed from user name and password rather than by Entra ID. You can do this in the settings tab of the server resource you created.
+This application was setup and developed with an Azure SQL database in mind. For information regarding the setup of such a database, please see the [Azure documentation](https://learn.microsoft.com/en-us/azure/azure-sql/database/single-database-create-quickstart?view=azuresql&tabs=azure-portal). Once you setup the resource, you will need to ensure that the database can be accessed from username and password rather than by Entra ID. You can do this in the settings tab of the server resource you created.
 
 ## SQL Database
 
-Once you have your database resource setup, you can create the SQL database structure for the application. Run the queries found in [create_db.sql](../PIVOT/create_db.sql) to create the necessary tables for the application. Once the tables are in place, you can begin data ingestion. A template for how to do this is found in [PIVOT/notebooks/Initial_Data_Ingestion.ipynb](../notebooks/Initital_Data_Ingestion.ipynb).
+Once you have your database resource setup, you can create the SQL database structure for the application. Run the queries found in [create_db.sql](../PIVOT/create_db.sql) to create the necessary tables for the application. Once the tables are in place, you can begin data ingestion. A template for how to do this is found in [PIVOT/notebooks/Initial_Data_Ingestion.ipynb](../notebooks/Initial_Data_Ingestion.ipynb).
 
 ## Azure ML Model
 
